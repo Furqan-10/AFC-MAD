@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="corner_radius_card">12dp</dimen>
+    <dimen name="corner_radius_card_bottom">12dp</dimen>
+    <dimen name="corner_radius_button">8dp</dimen>
+    <dimen name="padding_screen">16dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+</resources>

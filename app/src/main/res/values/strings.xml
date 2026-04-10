@@ -1,5 +1,15 @@
 <resources>
-    <string name="app_name">Food Ordering App</string>
+    <string name="app_name">KFC Pakistan</string>
+    <string name="home_title">Our Menu</string>
+    <string name="admin_title">Restaurant Manager</string>
+    <string name="cart_title">My Order</string>
+    <string name="checkout_title">Checkout</string>
+    <string name="login_title">Welcome Back</string>
+    <string name="signup_title">Join the Colonel</string>
+    <string name="manage_menu_title">Update Menu</string>
+    <string name="view_orders_title">Incoming Orders</string>
+    <string name="product_detail_title">Product Details</string>
+
     <string name="login">Login</string>
     <string name="signup">Sign Up</string>
     <string name="phone_number">Phone Number</string>
@@ -7,7 +17,7 @@
     <string name="address">Address</string>
     <string name="register">Register</string>
     <string name="add_to_cart">Add to Cart</string>
-    <string name="view_cart">View Cart</string>
+    <string name="view_cart">View Order</string>
     <string name="checkout">Checkout</string>
     <string name="place_order">Place Order</string>
 </resources>
