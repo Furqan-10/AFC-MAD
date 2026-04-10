@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="kfc_red">#C8102E</color>
-    <color name="kfc_black">#1A1A1A</color>
-    <color name="kfc_white">#FFFFFF</color>
-    <color name="kfc_cream">#FFF8F0</color>
-    <color name="kfc_dark_red">#A00D24</color>
-    <color name="kfc_light_gray">#F5F5F5</color>
-    <color name="kfc_text_secondary">#6B6B6B</color>
-    <color name="colorPrimary">#C8102E</color>
-    <color name="colorSecondary">#1A1A1A</color>
-    <color name="colorBackground">#FFFFFF</color>
-    <color name="colorSurface">#FFFFFF</color>
+    <!-- Brand Colors -->
+    <color name="afc_red">#C8102E</color>
+    <color name="afc_dark_red">#A00D24</color>
+    <color name="afc_black">#000000</color> <!-- Changed to True Black for OLED/Premium feel -->
+    <color name="afc_dark_grey">#1A1A1A</color> <!-- For cards in dark mode -->
+    <color name="afc_white">#FFFFFF</color>
+    <color name="afc_cream">#FFF8F0</color>
+    <color name="afc_light_gray">#F5F5F5</color>
+    <color name="afc_text_secondary">#6B6B6B</color>
 
-    <!-- Maintain compatibility if needed elsewhere, but strictly following the request -->
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Theme Mapping -->
+    <color name="colorPrimary">#C8102E</color>
+    <color name="colorSecondary">#000000</color>
 </resources>

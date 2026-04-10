@@ -2,15 +2,16 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/afc_white">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:title="Food Menu"
-        app:titleTextColor="@color/white"
+        android:background="@color/afc_red"
+        app:title="@string/home_title"
+        app:titleTextColor="@color/afc_white"
         app:layout_constraintTop_toTopOf="parent" />
 
     <HorizontalScrollView
@@ -25,24 +26,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <!-- Categories will be added programmatically or can be static Chips -->
+
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="All"
+                app:chipBackgroundColor="@color/afc_red"
+                android:textColor="@color/afc_white"
+                app:chipStrokeColor="@color/afc_red"
                 android:layout_marginEnd="8dp"/>
+
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipBurgers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Burgers"
+                style="@style/Widget.MaterialComponents.Chip.Action"
                 android:layout_marginEnd="8dp"/>
+
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPizza"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Pizza"
+                style="@style/Widget.MaterialComponents.Chip.Action"
                 android:layout_marginEnd="8dp"/>
         </LinearLayout>
     </HorizontalScrollView>
@@ -57,9 +65,12 @@
     <Button
         android:id="@+id/btnGoToCart"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View Cart"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/view_cart"
+        android:backgroundTint="@color/afc_red"
+        android:textColor="@color/afc_white"
         android:layout_margin="16dp"
+        app:cornerRadius="@dimen/corner_radius_button"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

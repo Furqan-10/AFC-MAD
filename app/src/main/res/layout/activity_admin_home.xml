@@ -1,40 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="?android:attr/windowBackground">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Admin Dashboard"
-        android:textSize="24sp"
+        android:text="@string/admin_title"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/afc_red"
         android:layout_marginBottom="48dp"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnManageMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Manage Menu"
-        android:padding="16dp"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/manage_menu_title"
+        android:backgroundTint="@color/afc_red"
+        app:cornerRadius="@dimen/corner_radius_button"
         android:layout_marginBottom="16dp"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnViewOrders"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View All Orders"
-        android:padding="16dp" />
+        android:layout_height="@dimen/button_height"
+        android:text="@string/view_orders_title"
+        android:backgroundTint="@color/afc_red"
+        app:cornerRadius="@dimen/corner_radius_button" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Logout"
-        android:backgroundTint="@android:color/holo_red_dark"
-        android:layout_marginTop="64dp" />
+        android:backgroundTint="?android:attr/textColorPrimary"
+        android:textColor="?android:attr/windowBackground"
+        android:layout_marginTop="64dp"
+        app:cornerRadius="@dimen/corner_radius_button" />
 
 </LinearLayout>

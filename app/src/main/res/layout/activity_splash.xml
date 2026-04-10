@@ -1,17 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/splashRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:gravity="center">
+    android:background="@color/afc_red">
 
-    <TextView
-        android:id="@+id/tvAppName"
+    <!-- Adaptive Icon Layers -->
+    <FrameLayout
+        android:id="@+id/iconContainer"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4">
+
+        <!-- Background Layer -->
+        <ImageView
+            android:id="@+id/ivIconBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@color/ic_launcher_background"
+            android:alpha="0" />
+
+        <!-- Foreground Layer -->
+        <ImageView
+            android:id="@+id/ivIconFg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@mipmap/ic_launcher_foreground"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <!-- Text Group -->
+    <LinearLayout
+        android:id="@+id/textGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Food Ordering App"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="@color/black" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="32dp"
+        android:alpha="0"
+        app:layout_constraintTop_toBottomOf="@id/iconContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AFC Pakistan"
+            android:textColor="@color/afc_white"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:id="@+id/tvTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="So Good."
+            android:textColor="@color/afc_white"
+            android:textSize="16sp"
+            android:textStyle="italic"
+            android:alpha="0.85" />
+    </LinearLayout>
+
+    <!-- Footer -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pakistan's Favourite Since 1997"
+        android:textColor="@color/afc_white"
+        android:textSize="11sp"
+        android:alpha="0.6"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

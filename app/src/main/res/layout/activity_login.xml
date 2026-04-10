@@ -1,50 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="?android:attr/windowBackground">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Food Ordering App"
-        android:textSize="28sp"
+        android:text="@string/app_name"
+        android:textSize="32sp"
         android:textStyle="bold"
-        android:textColor="@color/design_default_color_primary"
-        android:layout_marginBottom="16dp"/>
+        android:textColor="@color/afc_red"
+        android:layout_marginBottom="16dp"
+        android:letterSpacing="0.05"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="@string/login_title"
         android:textSize="20sp"
+        android:textColor="?android:attr/textColorPrimary"
         android:layout_marginBottom="32dp"/>
 
-    <EditText
-        android:id="@+id/etPhone"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Phone Number or 'admin'"
-        android:inputType="text"
-        android:autofillHints="username"/>
+        android:hint="@string/phone_number"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/afc_red"
+        app:hintTextColor="@color/afc_red">
 
-    <EditText
-        android:id="@+id/etPin"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="?android:attr/textColorPrimary"
+            android:autofillHints="username"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="PIN"
-        android:inputType="numberPassword"
+        android:hint="@string/pin"
         android:layout_marginTop="16dp"
-        android:autofillHints="password"/>
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/afc_red"
+        app:hintTextColor="@color/afc_red">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberPassword"
+            android:textColor="?android:attr/textColorPrimary"
+            android:autofillHints="password"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        android:layout_marginTop="32dp"/>
+        android:layout_height="@dimen/button_height"
+        android:text="@string/login"
+        android:backgroundTint="@color/afc_red"
+        android:textColor="@color/afc_white"
+        android:layout_marginTop="32dp"
+        app:cornerRadius="@dimen/corner_radius_button" />
 
     <TextView
         android:id="@+id/tvSignup"
@@ -52,7 +77,8 @@
         android:layout_height="wrap_content"
         android:text="Don't have an account? Sign up"
         android:layout_marginTop="16dp"
-        android:textColor="@color/design_default_color_primary"
+        android:textColor="@color/afc_red"
+        android:textStyle="bold"
         android:padding="8dp"/>
 
 </LinearLayout>

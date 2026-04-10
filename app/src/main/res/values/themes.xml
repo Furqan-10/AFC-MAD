@@ -1,13 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.AFCMAD" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/kfc_red</item>
-        <item name="colorOnPrimary">@color/kfc_white</item>
-        <item name="colorSecondary">@color/kfc_black</item>
-        <item name="android:windowBackground">@color/kfc_white</item>
-        <item name="colorSurface">@color/colorSurface</item>
-        <item name="android:statusBarColor">@color/kfc_red</item>
+        <!-- Light Theme Colors -->
+        <item name="colorPrimary">@color/afc_red</item>
+        <item name="colorOnPrimary">@color/afc_white</item>
+        <item name="colorSecondary">@color/afc_black</item>
+        <item name="colorOnSecondary">@color/afc_white</item>
+        <item name="android:windowBackground">@color/afc_white</item>
+        <item name="colorSurface">@color/afc_white</item>
+        <item name="android:statusBarColor">@color/afc_red</item>
+        <item name="android:navigationBarColor">@color/afc_white</item>
     </style>
 
     <style name="Theme.AFCMAD" parent="Base.Theme.AFCMAD" />

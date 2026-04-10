@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">KFC Pakistan</string>
+    <string name="app_name">AFC Pakistan</string>
     <string name="home_title">Our Menu</string>
     <string name="admin_title">Restaurant Manager</string>
     <string name="cart_title">My Order</string>
     <string name="checkout_title">Checkout</string>
     <string name="login_title">Welcome Back</string>
-    <string name="signup_title">Join the Colonel</string>
+    <string name="signup_title">Join the AFC Family</string>
     <string name="manage_menu_title">Update Menu</string>
     <string name="view_orders_title">Incoming Orders</string>
     <string name="product_detail_title">Product Details</string>

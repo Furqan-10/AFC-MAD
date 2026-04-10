@@ -1,31 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="@color/afc_white">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Checkout"
-        android:textSize="24sp"
+        android:text="@string/checkout_title"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/afc_red"
         android:layout_marginBottom="24dp"/>
 
-    <TextView
-        android:id="@+id/tvOrderSummary"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Order Summary"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
+        app:cardCornerRadius="@dimen/corner_radius_card"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/afc_light_gray"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvOrderSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Order Summary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/afc_black"
+                android:layout_marginBottom="16dp"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Select Payment Method:"
-        android:layout_marginTop="16dp"/>
+        android:textColor="@color/afc_text_secondary"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"/>
 
     <RadioGroup
         android:id="@+id/rgPayment"
@@ -37,11 +61,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cash on Delivery"
+            android:buttonTint="@color/afc_red"
             android:checked="true"/>
         <RadioButton
             android:id="@+id/rbCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:buttonTint="@color/afc_red"
             android:text="Card (Simulated)"/>
     </RadioGroup>
 
@@ -53,7 +79,10 @@
     <Button
         android:id="@+id/btnPlaceOrder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Place Order"/>
+        android:layout_height="@dimen/button_height"
+        android:text="@string/place_order"
+        android:backgroundTint="@color/afc_red"
+        android:textColor="@color/afc_white"
+        app:cornerRadius="@dimen/corner_radius_button" />
 
 </LinearLayout>

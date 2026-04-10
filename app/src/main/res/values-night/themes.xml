@@ -1,7 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.AFCMAD" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Dark Theme Colors -->
+        <item name="colorPrimary">@color/afc_red</item>
+        <item name="colorOnPrimary">@color/afc_white</item>
+        <item name="colorSecondary">@color/afc_red</item> <!-- Highlight red in dark mode -->
+        <item name="colorOnSecondary">@color/afc_white</item>
+        <item name="android:windowBackground">@color/afc_black</item> <!-- OLED Black -->
+        <item name="colorSurface">@color/afc_dark_grey</item> <!-- Slightly lighter for cards -->
+        <item name="android:statusBarColor">@color/afc_black</item>
+        <item name="android:navigationBarColor">@color/afc_black</item>
     </style>
 </resources>
