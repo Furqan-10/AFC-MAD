@@ -3,7 +3,7 @@ package com.example.afc_mad
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.afc_mad.adapters.MenuAdapter
 import com.example.afc_mad.databinding.ActivityHomeBinding
 import com.example.afc_mad.utils.FileHandler
@@ -34,14 +34,24 @@ class HomeActivity : AppCompatActivity() {
             intent.putExtra("menu_item", item)
             startActivity(intent)
         }
-        binding.rvMenu.layoutManager = LinearLayoutManager(this)
+        binding.rvMenu.layoutManager = GridLayoutManager(this, 2)
         binding.rvMenu.adapter = adapter
     }
 
     private fun setupCategoryChips() {
-        binding.chipAll.setOnClickListener { adapter.updateItems(fileHandler.getMenuItems()) }
-        binding.chipBurgers.setOnClickListener { filterByCategory("Burgers") }
-        binding.chipPizza.setOnClickListener { filterByCategory("Pizza") }
+        binding.chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.isEmpty()) {
+                adapter.updateItems(fileHandler.getMenuItems())
+                return@setOnCheckedStateChangeListener
+            }
+            
+            val checkedId = checkedIds.first()
+            when (checkedId) {
+                R.id.chipAll -> adapter.updateItems(fileHandler.getMenuItems())
+                R.id.chipBurgers -> filterByCategory("Burgers")
+                R.id.chipZinger -> filterByCategory("Zinger")
+            }
+        }
     }
 
     private fun filterByCategory(category: String) {
