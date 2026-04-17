@@ -15,15 +15,17 @@
         android:layout_height="wrap_content"
         android:paddingBottom="12dp">
 
-        <!-- Food Image -->
+        <!-- Food Image - Added missing side constraints -->
         <ImageView
             android:id="@+id/ivFood"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@color/afc_dark_grey"
             android:scaleType="centerCrop"
             app:layout_constraintDimensionRatio="H,16:9"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Popular Badge -->
         <TextView
@@ -63,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@color/afc_red"
+            android:background="@drawable/bg_red_rounded"
             android:paddingHorizontal="12dp"
             android:paddingVertical="4dp"
             android:text="Rs 770"

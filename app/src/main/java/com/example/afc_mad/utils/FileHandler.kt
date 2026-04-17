@@ -5,6 +5,7 @@ import com.example.afc_mad.models.CartItem
 import com.example.afc_mad.models.MenuItem
 import com.example.afc_mad.models.Order
 import com.example.afc_mad.models.User
+import com.example.afc_mad.models.Category
 import java.io.File
 
 class FileHandler(private val context: Context) {
@@ -12,6 +13,7 @@ class FileHandler(private val context: Context) {
     private val usersFile = "users.txt"
     private val menuFile = "menu.txt"
     private val ordersFile = "orders.txt"
+    private val categoriesFile = "categories.txt"
 
     fun saveUser(user: User) {
         val data = "${user.phone}|${user.address}|${user.pin}|${user.isAdmin}\n"
@@ -35,7 +37,7 @@ class FileHandler(private val context: Context) {
     }
 
     fun saveMenuItem(item: MenuItem) {
-        val data = "${item.id}|${item.name}|${item.price}|${item.description}|${item.category}\n"
+        val data = "${item.id}|${item.name}|${item.price}|${item.description}|${item.category}|${item.imagePath ?: "none"}|${item.orderType}\n"
         context.openFileOutput(menuFile, Context.MODE_APPEND).use {
             it.write(data.toByteArray())
         }
@@ -47,9 +49,10 @@ class FileHandler(private val context: Context) {
         if (file.exists()) {
             file.readLines().forEach { line ->
                 val parts = line.split("|")
-                if (parts.size == 5) {
+                if (parts.size >= 7) {
                     try {
-                        items.add(MenuItem(parts[0], parts[1], parts[2].toDouble(), parts[3], parts[4]))
+                        val imagePath = if (parts[5] != "none") parts[5] else null
+                        items.add(MenuItem(parts[0], parts[1], parts[2].toDouble(), parts[3], parts[4], imagePath, parts[6]))
                     } catch (e: Exception) {
                         // Skip malformed lines
                     }
@@ -61,12 +64,39 @@ class FileHandler(private val context: Context) {
 
     fun deleteMenuItem(id: String) {
         val items = getMenuItems().filter { it.id != id }
-        val file = File(context.filesDir, menuFile)
-        // Correctly overwrite the file
         context.openFileOutput(menuFile, Context.MODE_PRIVATE).use {
             it.write("".toByteArray())
         }
         items.forEach { saveMenuItem(it) }
+    }
+
+    fun saveCategory(category: Category) {
+        val data = "${category.id}|${category.name}|${category.orderType}\n"
+        context.openFileOutput(categoriesFile, Context.MODE_APPEND).use {
+            it.write(data.toByteArray())
+        }
+    }
+
+    fun getCategories(): List<Category> {
+        val list = mutableListOf<Category>()
+        val file = File(context.filesDir, categoriesFile)
+        if (file.exists()) {
+            file.readLines().forEach { line ->
+                val parts = line.split("|")
+                if (parts.size == 3) {
+                    list.add(Category(parts[0], parts[1], parts[2]))
+                }
+            }
+        }
+        return list
+    }
+
+    fun deleteCategory(id: String) {
+        val list = getCategories().filter { it.id != id }
+        context.openFileOutput(categoriesFile, Context.MODE_PRIVATE).use {
+            it.write("".toByteArray())
+        }
+        list.forEach { saveCategory(it) }
     }
 
     fun saveOrder(order: Order) {

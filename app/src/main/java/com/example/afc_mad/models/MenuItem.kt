@@ -7,5 +7,7 @@ data class MenuItem(
     val name: String,
     val price: Double,
     val description: String,
-    val category: String
+    val category: String,
+    val imagePath: String? = null,
+    val orderType: String = "Delivery" // "Delivery", "Pickup", "Merch"
 ) : Serializable

@@ -43,7 +43,7 @@
         app:layout_constraintTop_toBottomOf="@id/ivCharacter"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Phone Number Input -->
+    <!-- Phone Number Input - Changed inputType to text to allow 'admin' -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilPhone"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -61,7 +61,7 @@
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="phone"
+            android:inputType="text"
             android:textColor="@color/afc_white"
             android:textColorHint="@color/afc_text_secondary"
             android:padding="16dp" />
