@@ -58,7 +58,7 @@ class HomeActivity : AppCompatActivity() {
     private fun setupDrawer() {
         // Safer access to the navigation view and its header
         val navigationView = binding.navigationView
-        
+
         // If header isn't there, inflate it
         if (navigationView.headerCount == 0) {
             navigationView.inflateHeaderView(R.layout.layout_drawer_header)
@@ -99,7 +99,7 @@ class HomeActivity : AppCompatActivity() {
     private fun showChangeAddressDialog() {
         val input = EditText(this)
         input.hint = "Enter new address"
-        
+
         AlertDialog.Builder(this)
             .setTitle("Change Address")
             .setView(input)

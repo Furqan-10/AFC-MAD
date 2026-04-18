@@ -65,7 +65,7 @@
                     android:id="@+id/tvDetailName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Krunch Burger"
+                    android:text="Item Name"
                     android:textColor="@color/afc_white"
                     android:textSize="26sp"
                     android:textStyle="bold" />
@@ -75,20 +75,35 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Krunch fillet, spicy mayo, lettuce, sandwiched between a sesame seed bun"
+                    android:text="Description..."
                     android:textColor="@color/afc_text_secondary"
                     android:textSize="14sp"
                     android:lineSpacingExtra="4dp" />
 
                 <!-- Customization Sections -->
-                <TextView
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Choose an option"
-                    android:textColor="@color/afc_white"
-                    android:textStyle="bold"
-                    android:textSize="15sp" />
+                    android:layout_marginTop="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Choose an option"
+                        android:textColor="@color/afc_white"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:layout_alignParentStart="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="(required)"
+                        android:textColor="@color/afc_red"
+                        android:textSize="12sp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -104,9 +119,10 @@
                         android:padding="16dp">
 
                         <TextView
+                            android:id="@+id/tvOptionName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Krunch Burger"
+                            android:text="Item Name"
                             android:textColor="@color/afc_white"
                             android:textStyle="bold"
                             app:layout_constraintTop_toTopOf="parent"
@@ -117,11 +133,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="(Rs 310)"
+                            android:text="(Rs 0)"
                             android:textColor="@color/afc_text_secondary"
-                            app:layout_constraintTop_toBottomOf="@id/tvDetailPriceLabel"
-                            app:layout_constraintStart_toStartOf="parent"
-                            tools:ignore="NotSibling" />
+                            app:layout_constraintTop_toBottomOf="@id/tvOptionName"
+                            app:layout_constraintStart_toStartOf="parent" />
 
                         <RadioButton
                             android:layout_width="wrap_content"
@@ -135,6 +150,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
+                    android:id="@+id/tvDrinkSectionLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
@@ -143,45 +159,14 @@
                     android:textStyle="bold"
                     android:textSize="15sp" />
 
-                <com.google.android.material.card.MaterialCardView
+                <!-- Dynamic Drinks RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvDrinks"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="32dp"
-                    app:cardBackgroundColor="@color/afc_dark_grey"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Pepsi Regular"
-                            android:textColor="@color/afc_white"
-                            android:textStyle="bold"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="40dp"
-                            android:text="ADD"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/afc_white"
-                            android:backgroundTint="@color/afc_red"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            app:cornerRadius="8dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
+                    android:nestedScrollingEnabled="false" />
 
             </LinearLayout>
         </LinearLayout>
@@ -209,14 +194,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <ImageButton
+            <TextView
                 android:id="@+id/btnMinus"
                 android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@android:drawable/ic_menu_delete"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/afc_text_secondary"
-                android:contentDescription="Decrease" />
+                android:layout_height="match_parent"
+                android:text="−"
+                android:textColor="@color/afc_text_secondary"
+                android:textSize="24sp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless" />
 
             <TextView
                 android:id="@+id/tvQuantity"
@@ -228,14 +216,17 @@
                 android:textStyle="bold"
                 android:gravity="center" />
 
-            <ImageButton
+            <TextView
                 android:id="@+id/btnPlus"
                 android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@android:drawable/ic_input_add"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/afc_red"
-                android:contentDescription="Increase" />
+                android:layout_height="match_parent"
+                android:text="+"
+                android:textColor="@color/afc_red"
+                android:textSize="24sp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -259,7 +250,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Rs 310"
+            android:text="Rs 0"
             android:textColor="@color/afc_white"
             android:textSize="16sp"
             android:textStyle="bold"
