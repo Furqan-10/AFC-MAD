@@ -71,6 +71,7 @@ class FileHandler(private val context: Context) {
     }
 
     fun saveCategory(category: Category) {
+        // Use consistent delimiter | for consistency with other files
         val data = "${category.id}|${category.name}|${category.orderType}\n"
         context.openFileOutput(categoriesFile, Context.MODE_APPEND).use {
             it.write(data.toByteArray())
@@ -83,8 +84,12 @@ class FileHandler(private val context: Context) {
         if (file.exists()) {
             file.readLines().forEach { line ->
                 val parts = line.split("|")
+                // Check for size 3 because we added category ID
                 if (parts.size == 3) {
                     list.add(Category(parts[0], parts[1], parts[2]))
+                } else if (parts.size == 2) {
+                    // Backwards compatibility for older 2-part format (name|orderType)
+                    list.add(Category(java.util.UUID.randomUUID().toString(), parts[0], parts[1]))
                 }
             }
         }

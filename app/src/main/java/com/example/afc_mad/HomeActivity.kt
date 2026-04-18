@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.afc_mad.adapters.MenuAdapter
 import com.example.afc_mad.databinding.ActivityHomeBinding
-import com.example.afc_mad.models.MenuItem
 import com.example.afc_mad.utils.FileHandler
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -36,6 +35,11 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshUI()
+    }
+
     private fun setupRecyclerView() {
         adapter = MenuAdapter(mutableListOf()) { item ->
             val intent = Intent(this, ProductDetailActivity::class.java)
@@ -47,6 +51,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupOrderTypeToggles() {
+        // Using IDs from current activity_home.xml: btnDelivery, btnPickup, btnMerch
         val buttons = listOf(binding.btnDelivery, binding.btnPickup, binding.btnMerch)
         buttons.forEach { btn ->
             btn.setOnClickListener {
@@ -79,51 +84,67 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun loadDynamicCategories() {
+        // Using ID from current activity_home.xml: chipGroup
         binding.chipGroup.removeAllViews()
         
         // Add "All" Chip
         addChip("All")
 
-        // Add dynamic categories from storage based on orderType
-        val categories = fileHandler.getCategories().filter { it.orderType == currentOrderType }
-        categories.forEach { addChip(it.name) }
-
-        // Set listener for selection
-        binding.chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-            if (checkedIds.isNotEmpty()) {
-                val chip = findViewById<Chip>(checkedIds.first())
-                currentCategory = chip.text.toString()
-                filterMenu()
-            }
+        // Add dynamic categories from storage based on currentOrderType
+        val categories = fileHandler.getCategories().filter { 
+            it.orderType.equals(currentOrderType, ignoreCase = true) 
         }
+        categories.forEach { addChip(it.name) }
     }
 
     private fun addChip(name: String) {
         val chip = Chip(this).apply {
+            id = View.generateViewId()
             text = name
             isCheckable = true
             isClickable = true
             isChecked = (name == currentCategory)
+            
+            // Design consistency
             setTextColor(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.afc_white)))
-            setChipBackgroundColorResource(if (isChecked) R.color.afc_red else R.color.afc_dark_grey)
+            chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, 
+                if (isChecked) R.color.afc_red else R.color.afc_dark_grey))
+            
             chipStrokeWidth = 0f
             
             setOnCheckedChangeListener { buttonView, isChecked ->
                 if (isChecked) {
-                    buttonView.setChipBackgroundColorResource(R.color.afc_red)
+                    currentCategory = name
+                    (buttonView as Chip).chipBackgroundColor = ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.afc_red)
+                    )
+                    
+                    uncheckOthers(buttonView as Chip)
+                    filterMenu()
                 } else {
-                    buttonView.setChipBackgroundColorResource(R.color.afc_dark_grey)
+                    (buttonView as Chip).chipBackgroundColor = ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.afc_dark_grey)
+                    )
                 }
             }
         }
         binding.chipGroup.addView(chip)
     }
 
+    private fun uncheckOthers(selectedChip: Chip) {
+        for (i in 0 until binding.chipGroup.childCount) {
+            val child = binding.chipGroup.getChildAt(i)
+            if (child is Chip && child != selectedChip) {
+                child.isChecked = false
+            }
+        }
+    }
+
     private fun filterMenu() {
         val allItems = fileHandler.getMenuItems()
         val filtered = allItems.filter { 
-            val typeMatch = it.orderType == currentOrderType
-            val categoryMatch = currentCategory == "All" || it.category == currentCategory
+            val typeMatch = it.orderType.equals(currentOrderType, ignoreCase = true)
+            val categoryMatch = currentCategory == "All" || it.category.equals(currentCategory, ignoreCase = true)
             typeMatch && categoryMatch
         }
         adapter.updateItems(filtered)

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/afc_black">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/afc_red"
+        app:navigationIcon="@drawable/ic_arrow_back_white"
+        app:title="Manage Categories"
+        app:titleTextColor="@color/afc_white" />
+
+    <RadioGroup
+        android:id="@+id/rgOrderType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/afc_dark_grey">
+
+        <RadioButton
+            android:id="@+id/rbDelivery"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="Delivery"
+            android:textColor="@color/afc_white"
+            android:buttonTint="@color/afc_red" />
+
+        <RadioButton
+            android:id="@+id/rbPickup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pickup"
+            android:textColor="@color/afc_white"
+            android:buttonTint="@color/afc_red" />
+
+        <RadioButton
+            android:id="@+id/rbMerch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Merch"
+            android:textColor="@color/afc_white"
+            android:buttonTint="@color/afc_red" />
+    </RadioGroup>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/afc_dark_grey" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/afc_red"
+            app:hintTextColor="@color/afc_red"
+            android:textColorHint="@color/afc_text_secondary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNewCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New category name"
+                android:textColor="@color/afc_white"
+                android:inputType="textCapWords"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnAddCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:text="Add"
+            android:textColor="@color/afc_white"
+            android:backgroundTint="@color/afc_red"
+            android:paddingHorizontal="20dp" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/afc_dark_grey" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCategories"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>

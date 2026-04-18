@@ -30,6 +30,7 @@
         <activity android:name=".AdminHomeActivity" />
         <activity android:name=".ManageMenuActivity" />
         <activity android:name=".ViewOrdersActivity" />
+        <activity android:name=".ManageCategoriesActivity" />
 
     </application>
 

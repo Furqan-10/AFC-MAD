@@ -22,17 +22,15 @@ class ManageMenuActivity : AppCompatActivity() {
     private lateinit var binding: ActivityManageMenuBinding
     private lateinit var fileHandler: FileHandler
     private lateinit var adapter: MenuAdapter
-    private var savedImagePath: String? = null  // FIX: track the SAVED path, not the URI
+    private var savedImagePath: String? = null
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data ?: return@registerForActivityResult
-
-            // FIX: copy immediately on pick, save path right here — don't wait until "Add" is tapped
             val path = saveImageToInternalStorage(uri)
             if (path != null) {
                 savedImagePath = path
-                binding.ivSelectedImage.setImageURI(Uri.fromFile(File(path))) // show from file, not URI
+                binding.ivSelectedImage.setImageURI(Uri.fromFile(File(path)))
                 binding.ivSelectedImage.imageTintList = null
                 binding.tvImagePlaceholder.text = "Image Selected ✓"
             } else {
@@ -49,15 +47,21 @@ class ManageMenuActivity : AppCompatActivity() {
 
         fileHandler = FileHandler(this)
         setupRecyclerView()
-        setupCategorySpinner()
+        
+        // Initial setup for category dropdown based on default "Delivery" selection
+        refreshCategoryDropdown()
 
         binding.toolbar.setNavigationOnClickListener { finish() }
+
+        // Refresh category dropdown when order type changes
+        binding.rgOrderType.setOnCheckedChangeListener { _, _ ->
+            refreshCategoryDropdown()
+        }
 
         binding.cardPickImage.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "image/*"
-                // FIX: request persistable permission so URI stays valid longer
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             }
             pickImageLauncher.launch(intent)
@@ -68,7 +72,13 @@ class ManageMenuActivity : AppCompatActivity() {
             val priceStr = binding.etItemPrice.text.toString().trim()
             val desc = binding.etItemDesc.text.toString().trim()
             val category = binding.spinnerCategory.text.toString()
-            val orderType = if (binding.rbDelivery.isChecked) "Delivery" else "Pickup"
+            
+            // Get order type from RadioGroup (3 options: Delivery, Pickup, Merch)
+            val orderType = when (binding.rgOrderType.checkedRadioButtonId) {
+                R.id.rbPickup -> "Pickup"
+                R.id.rbMerch -> "Merch"
+                else -> "Delivery"
+            }
 
             if (name.isEmpty() || priceStr.isEmpty() || category.isEmpty()) {
                 Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show()
@@ -83,7 +93,7 @@ class ManageMenuActivity : AppCompatActivity() {
                     price = price,
                     description = desc,
                     category = category,
-                    imagePath = savedImagePath,  // FIX: use already-saved path (null is fine — no image)
+                    imagePath = savedImagePath,
                     orderType = orderType
                 )
                 fileHandler.saveMenuItem(item)
@@ -96,41 +106,51 @@ class ManageMenuActivity : AppCompatActivity() {
         }
     }
 
-    // FIX: improved saveImageToInternalStorage with explicit error logging
+    private fun refreshCategoryDropdown() {
+        val selectedOrderType = when (binding.rgOrderType.checkedRadioButtonId) {
+            R.id.rbPickup -> "Pickup"
+            R.id.rbMerch -> "Merch"
+            else -> "Delivery"
+        }
+        
+        // Fetch categories added via "Manage Categories" filtered by service type
+        val categories = fileHandler.getCategories()
+            .filter { it.orderType.equals(selectedOrderType, ignoreCase = true) }
+            .map { it.name }
+            .toTypedArray()
+            
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categories)
+        binding.spinnerCategory.setAdapter(adapter)
+        
+        // Clear previous selection if it's not valid for the new type
+        binding.spinnerCategory.text.clear()
+        if (categories.isEmpty()) {
+            binding.spinnerCategory.hint = "No categories for $selectedOrderType"
+        } else {
+            binding.spinnerCategory.hint = "Select Category"
+        }
+    }
+
     private fun saveImageToInternalStorage(uri: Uri): String? {
         return try {
             val fileName = "img_${System.currentTimeMillis()}.jpg"
             val file = File(filesDir, fileName)
             val inputStream = contentResolver.openInputStream(uri)
-                ?: throw IOException("Cannot open URI stream — permission may have expired")
+                ?: throw IOException("Cannot open URI stream")
             inputStream.use { input ->
                 FileOutputStream(file).use { output ->
-                    val bytesCopied = input.copyTo(output)
-                    if (bytesCopied == 0L) throw IOException("Copied 0 bytes — file may be empty")
+                    input.copyTo(output)
                 }
             }
-            // Verify file was actually written
-            if (file.exists() && file.length() > 0) {
-                file.absolutePath
-            } else {
-                file.delete()
-                null
-            }
+            if (file.exists() && file.length() > 0) file.absolutePath else null
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
-    private fun setupCategorySpinner() {
-        val categories = arrayOf("Deals", "Burgers", "Zinger", "Sides", "Drinks", "Desserts")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categories)
-        binding.spinnerCategory.setAdapter(adapter)
-    }
-
     private fun setupRecyclerView() {
         adapter = MenuAdapter(fileHandler.getMenuItems()) { item ->
-            // FIX: also delete the image file from internal storage when item is removed
             if (!item.imagePath.isNullOrEmpty() && item.imagePath.startsWith("/")) {
                 val imgFile = File(item.imagePath)
                 if (imgFile.exists()) imgFile.delete()
@@ -154,7 +174,7 @@ class ManageMenuActivity : AppCompatActivity() {
         binding.spinnerCategory.text?.clear()
         binding.ivSelectedImage.setImageResource(android.R.drawable.ic_menu_camera)
         binding.tvImagePlaceholder.text = "Tap to Add Photo"
-        savedImagePath = null   // FIX: reset the saved path, not a URI
+        savedImagePath = null
         binding.etItemName.requestFocus()
     }
 }

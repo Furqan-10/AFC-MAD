@@ -134,7 +134,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Category"
+                        android:hint=""
                         app:hintTextColor="@color/afc_text_secondary"
                         app:boxStrokeColor="@color/afc_red">
                         <AutoCompleteTextView
