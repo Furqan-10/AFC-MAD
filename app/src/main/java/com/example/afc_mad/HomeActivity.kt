@@ -1,12 +1,21 @@
 package com.example.afc_mad
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.afc_mad.adapters.BannerAdapter
 import com.example.afc_mad.adapters.MenuAdapter
 import com.example.afc_mad.databinding.ActivityHomeBinding
 import com.example.afc_mad.utils.FileHandler
@@ -16,9 +25,12 @@ import com.google.android.material.chip.Chip
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var fileHandler: FileHandler
-    private lateinit var adapter: MenuAdapter
+    private lateinit var menuAdapter: MenuAdapter
     private var currentOrderType = "Delivery"
     private var currentCategory = "All"
+    
+    private val autoScrollHandler = Handler(Looper.getMainLooper())
+    private var autoScrollRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,32 +38,115 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         fileHandler = FileHandler(this)
-        setupRecyclerView()
+        
+        setupMenuRecyclerView()
         setupOrderTypeToggles()
+        setupBanners()
+        setupDrawer()
         refreshUI()
+        updateLocationDisplay()
 
         binding.btnGoToCart.setOnClickListener {
             startActivity(Intent(this, CartActivity::class.java))
         }
+
+        binding.ivMenuIcon.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun setupDrawer() {
+        // Safer access to the navigation view and its header
+        val navigationView = binding.navigationView
+        
+        // If header isn't there, inflate it
+        if (navigationView.headerCount == 0) {
+            navigationView.inflateHeaderView(R.layout.layout_drawer_header)
+        }
+        
+        val headerView = navigationView.getHeaderView(0)
+        
+        if (headerView != null) {
+            val tvName = headerView.findViewById<TextView>(R.id.tvProfileName)
+            val tvAddress = headerView.findViewById<TextView>(R.id.tvProfileAddress)
+            val btnLogout = headerView.findViewById<MaterialButton>(R.id.btnLogout)
+            val btnChangeAddress = headerView.findViewById<MaterialButton>(R.id.btnChangeAddress)
+
+            val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+            val phone = sharedPref.getString("user_phone", "Guest")
+            val address = sharedPref.getString("user_address", "No address set")
+
+            tvName?.text = "User: $phone"
+            tvAddress?.text = address
+
+            btnLogout?.setOnClickListener {
+                with(sharedPref.edit()) {
+                    clear()
+                    apply()
+                }
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+
+            btnChangeAddress?.setOnClickListener {
+                showChangeAddressDialog()
+            }
+        }
+    }
+
+    private fun showChangeAddressDialog() {
+        val input = EditText(this)
+        input.hint = "Enter new address"
+        
+        AlertDialog.Builder(this)
+            .setTitle("Change Address")
+            .setView(input)
+            .setPositiveButton("Update") { _, _ ->
+                val newAddress = input.text.toString().trim()
+                if (newAddress.isNotEmpty()) {
+                    val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                    sharedPref.edit().putString("user_address", newAddress).apply()
+                    updateLocationDisplay()
+                    setupDrawer() // Update drawer info
+                    Toast.makeText(this, "Address updated", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateLocationDisplay() {
+        val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val address = sharedPref.getString("user_address", "No Address Selected")
+        binding.tvLocation.text = address
     }
 
     override fun onResume() {
         super.onResume()
         refreshUI()
+        startAutoScroll()
+        updateLocationDisplay()
+        setupDrawer() // Refresh drawer every time we come back
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        stopAutoScroll()
     }
 
-    private fun setupRecyclerView() {
-        adapter = MenuAdapter(mutableListOf()) { item ->
+    private fun setupMenuRecyclerView() {
+        menuAdapter = MenuAdapter(mutableListOf()) { item ->
             val intent = Intent(this, ProductDetailActivity::class.java)
             intent.putExtra("menu_item", item)
             startActivity(intent)
         }
         binding.rvMenu.layoutManager = GridLayoutManager(this, 2)
-        binding.rvMenu.adapter = adapter
+        binding.rvMenu.adapter = menuAdapter
     }
 
     private fun setupOrderTypeToggles() {
-        // Using IDs from current activity_home.xml: btnDelivery, btnPickup, btnMerch
         val buttons = listOf(binding.btnDelivery, binding.btnPickup, binding.btnMerch)
         buttons.forEach { btn ->
             btn.setOnClickListener {
@@ -61,6 +156,35 @@ class HomeActivity : AppCompatActivity() {
                 refreshUI()
             }
         }
+    }
+
+    private fun setupBanners() {
+        val banners = fileHandler.getBanners()
+        if (banners.isNotEmpty()) {
+            val adapter = BannerAdapter(banners)
+            binding.viewPagerBanners.adapter = adapter
+            startAutoScroll()
+        }
+    }
+    
+    private fun startAutoScroll() {
+        val banners = fileHandler.getBanners()
+        if (banners.size <= 1) return
+        
+        stopAutoScroll()
+        autoScrollRunnable = object : Runnable {
+            override fun run() {
+                var current = binding.viewPagerBanners.currentItem
+                current = (current + 1) % banners.size
+                binding.viewPagerBanners.setCurrentItem(current, true)
+                autoScrollHandler.postDelayed(this, 3000)
+            }
+        }
+        autoScrollHandler.postDelayed(autoScrollRunnable!!, 3000)
+    }
+    
+    private fun stopAutoScroll() {
+        autoScrollRunnable?.let { autoScrollHandler.removeCallbacks(it) }
     }
 
     private fun updateToggleUI(selectedBtn: MaterialButton) {
@@ -84,13 +208,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun loadDynamicCategories() {
-        // Using ID from current activity_home.xml: chipGroup
         binding.chipGroup.removeAllViews()
-        
-        // Add "All" Chip
         addChip("All")
-
-        // Add dynamic categories from storage based on currentOrderType
         val categories = fileHandler.getCategories().filter { 
             it.orderType.equals(currentOrderType, ignoreCase = true) 
         }
@@ -102,14 +221,10 @@ class HomeActivity : AppCompatActivity() {
             id = View.generateViewId()
             text = name
             isCheckable = true
-            isClickable = true
             isChecked = (name == currentCategory)
-            
-            // Design consistency
             setTextColor(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.afc_white)))
             chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, 
                 if (isChecked) R.color.afc_red else R.color.afc_dark_grey))
-            
             chipStrokeWidth = 0f
             
             setOnCheckedChangeListener { buttonView, isChecked ->
@@ -118,7 +233,6 @@ class HomeActivity : AppCompatActivity() {
                     (buttonView as Chip).chipBackgroundColor = ColorStateList.valueOf(
                         ContextCompat.getColor(context, R.color.afc_red)
                     )
-                    
                     uncheckOthers(buttonView as Chip)
                     filterMenu()
                 } else {
@@ -147,6 +261,6 @@ class HomeActivity : AppCompatActivity() {
             val categoryMatch = currentCategory == "All" || it.category.equals(currentCategory, ignoreCase = true)
             typeMatch && categoryMatch
         }
-        adapter.updateItems(filtered)
+        menuAdapter.updateItems(filtered)
     }
 }

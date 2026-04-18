@@ -1,276 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/afc_black">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/afc_black"
-        app:elevation="0dp">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_marginTop="8dp"
-            app:contentInsetStart="0dp">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:id="@+id/ivMenuIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_sort_by_size"
-                    app:tint="@color/afc_white"
-                    android:contentDescription="Menu"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvLocation"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="No Address Selected"
-                    android:textColor="@color/afc_white"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:singleLine="true"
-                    android:ellipsize="end"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/ivMenuIcon"
-                    app:layout_constraintEnd_toStartOf="@id/tvAfcTitle" />
-
-                <TextView
-                    android:id="@+id/tvAfcTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="AFC"
-                    android:textColor="@color/afc_red"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="-0.02"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.appbar.MaterialToolbar>
-
-        <!-- Order Type Toggle (Delivery/Pickup/Merch) - Improved Responsiveness -->
-        <LinearLayout
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp"
-            android:weightSum="3">
+            android:background="@color/afc_black"
+            app:elevation="0dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelivery"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:text="Delivery"
-                android:textColor="@color/afc_white"
-                android:textSize="11sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:padding="0dp"
-                app:strokeColor="@color/afc_red"
-                app:strokeWidth="1dp"
-                app:backgroundTint="@color/afc_black"
-                app:icon="@android:drawable/ic_menu_send"
-                app:iconSize="16dp"
-                app:iconPadding="4dp"
-                app:iconTint="@color/afc_red" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnPickup"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:text="Pickup"
-                android:textColor="@color/afc_text_secondary"
-                android:textSize="11sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:padding="0dp"
-                app:strokeColor="@color/afc_dark_grey"
-                app:strokeWidth="1dp"
-                app:icon="@android:drawable/ic_menu_myplaces"
-                app:iconSize="16dp"
-                app:iconPadding="4dp"
-                app:iconTint="@color/afc_text_secondary" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMerch"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:text="Merch"
-                android:textColor="@color/afc_text_secondary"
-                android:textSize="11sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:padding="0dp"
-                app:strokeColor="@color/afc_dark_grey"
-                app:strokeWidth="1dp"
-                app:icon="@android:drawable/ic_menu_agenda"
-                app:iconSize="16dp"
-                app:iconPadding="4dp"
-                app:iconTint="@color/afc_text_secondary" />
-        </LinearLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="100dp">
-
-            <!-- Hero Banner -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="What's new"
-                android:textColor="@color/afc_white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_margin="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_marginHorizontal="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp">
-                <ImageView
+                android:layout_height="?attr/actionBarSize"
+                android:layout_marginTop="8dp"
+                app:contentInsetStart="0dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@color/afc_dark_grey"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Banner" />
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="#80000000"
-                    android:padding="12dp"
-                    android:text="Deals of the Day 🔥"
+                    android:paddingHorizontal="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivMenuIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_sort_by_size"
+                        app:tint="@color/afc_white"
+                        android:contentDescription="Menu"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvLocation"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="No Address Selected"
+                        android:textColor="@color/afc_white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/ivMenuIcon"
+                        app:layout_constraintEnd_toStartOf="@id/tvAfcTitle" />
+
+                    <TextView
+                        android:id="@+id/tvAfcTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AFC"
+                        android:textColor="@color/afc_red"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.02"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.appbar.MaterialToolbar>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:weightSum="3">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelivery"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:text="Delivery"
                     android:textColor="@color/afc_white"
-                    android:textStyle="bold" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:textSize="11sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:padding="0dp"
+                    app:strokeColor="@color/afc_red"
+                    app:strokeWidth="1dp"
+                    app:backgroundTint="@color/afc_black"
+                    app:icon="@android:drawable/ic_menu_send"
+                    app:iconSize="16dp"
+                    app:iconPadding="4dp"
+                    app:iconTint="@color/afc_red" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnReorder"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickup"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:text="Pickup"
+                    android:textColor="@color/afc_text_secondary"
+                    android:textSize="11sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:padding="0dp"
+                    app:strokeColor="@color/afc_dark_grey"
+                    app:strokeWidth="1dp"
+                    app:icon="@android:drawable/ic_menu_myplaces"
+                    app:iconSize="16dp"
+                    app:iconPadding="4dp"
+                    app:iconTint="@color/afc_text_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMerch"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:text="Merch"
+                    android:textColor="@color/afc_text_secondary"
+                    android:textSize="11sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:padding="0dp"
+                    app:strokeColor="@color/afc_dark_grey"
+                    app:strokeWidth="1dp"
+                    app:icon="@android:drawable/ic_menu_agenda"
+                    app:iconSize="16dp"
+                    app:iconPadding="4dp"
+                    app:iconTint="@color/afc_text_secondary" />
+            </LinearLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_margin="16dp"
-                android:text="REORDER"
-                android:backgroundTint="@color/afc_red"
-                android:textStyle="bold"
-                app:cornerRadius="4dp" />
-
-            <!-- Explore Menu Section -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Explore Menu"
-                android:textColor="@color/afc_white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp" />
+                android:orientation="vertical"
+                android:paddingBottom="100dp">
 
-            <!-- Category Chips -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:layout_marginTop="12dp">
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroup"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAll"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="What's new"
+                    android:textColor="@color/afc_white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_margin="16dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardBanner"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginHorizontal="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/viewPagerBanners"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Experience the taste of excellence 🔥"
+                    android:textColor="@color/afc_white"
+                    android:textSize="12sp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReorder"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_margin="16dp"
+                    android:text="REORDER"
+                    android:backgroundTint="@color/afc_red"
+                    android:textStyle="bold"
+                    app:cornerRadius="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Explore Menu"
+                    android:textColor="@color/afc_white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:layout_marginTop="12dp">
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="All"
-                        android:checked="true"
-                        android:textColor="@color/afc_white"
-                        app:chipBackgroundColor="@color/afc_red"
-                        app:chipStrokeWidth="0dp" />
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipBurgers"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Burgers"
-                        android:textColor="@color/afc_white"
-                        app:chipBackgroundColor="@color/afc_dark_grey"
-                        app:chipStrokeWidth="0dp" />
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipZinger"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Zinger"
-                        android:textColor="@color/afc_white"
-                        app:chipBackgroundColor="@color/afc_dark_grey"
-                        app:chipStrokeWidth="0dp" />
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
+                        android:paddingHorizontal="16dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true" />
+                </HorizontalScrollView>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:paddingHorizontal="8dp"
-                android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/item_menu" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:paddingHorizontal="8dp"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_menu" />
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGoToCart"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="bottom"
-        android:layout_margin="16dp"
-        android:text="View Order"
-        android:textStyle="bold"
-        android:backgroundTint="@color/afc_red"
-        app:cornerRadius="8dp"
-        app:elevation="8dp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoToCart"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_gravity="bottom"
+            android:layout_margin="16dp"
+            android:text="View Order"
+            android:textStyle="bold"
+            android:backgroundTint="@color/afc_red"
+            app:cornerRadius="8dp"
+            app:elevation="8dp" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- Side Menu Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/afc_black"
+        app:headerLayout="@layout/layout_drawer_header" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

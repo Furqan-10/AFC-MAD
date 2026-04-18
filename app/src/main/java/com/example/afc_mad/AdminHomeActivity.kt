@@ -2,7 +2,6 @@ package com.example.afc_mad
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.afc_mad.databinding.ActivityAdminHomeBinding
 
@@ -27,7 +26,7 @@ class AdminHomeActivity : AppCompatActivity() {
         }
         
         binding.btnManageBanners.setOnClickListener {
-            Toast.makeText(this, "Manage Banners coming soon!", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ManageBannersActivity::class.java))
         }
 
         binding.btnLogout.setOnClickListener {

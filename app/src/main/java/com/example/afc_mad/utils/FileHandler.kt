@@ -1,11 +1,7 @@
 package com.example.afc_mad.utils
 
 import android.content.Context
-import com.example.afc_mad.models.CartItem
-import com.example.afc_mad.models.MenuItem
-import com.example.afc_mad.models.Order
-import com.example.afc_mad.models.User
-import com.example.afc_mad.models.Category
+import com.example.afc_mad.models.*
 import java.io.File
 
 class FileHandler(private val context: Context) {
@@ -14,6 +10,7 @@ class FileHandler(private val context: Context) {
     private val menuFile = "menu.txt"
     private val ordersFile = "orders.txt"
     private val categoriesFile = "categories.txt"
+    private val bannersFile = "banners.txt"
 
     fun saveUser(user: User) {
         val data = "${user.phone}|${user.address}|${user.pin}|${user.isAdmin}\n"
@@ -53,9 +50,7 @@ class FileHandler(private val context: Context) {
                     try {
                         val imagePath = if (parts[5] != "none") parts[5] else null
                         items.add(MenuItem(parts[0], parts[1], parts[2].toDouble(), parts[3], parts[4], imagePath, parts[6]))
-                    } catch (e: Exception) {
-                        // Skip malformed lines
-                    }
+                    } catch (e: Exception) {}
                 }
             }
         }
@@ -71,7 +66,6 @@ class FileHandler(private val context: Context) {
     }
 
     fun saveCategory(category: Category) {
-        // Use consistent delimiter | for consistency with other files
         val data = "${category.id}|${category.name}|${category.orderType}\n"
         context.openFileOutput(categoriesFile, Context.MODE_APPEND).use {
             it.write(data.toByteArray())
@@ -84,11 +78,9 @@ class FileHandler(private val context: Context) {
         if (file.exists()) {
             file.readLines().forEach { line ->
                 val parts = line.split("|")
-                // Check for size 3 because we added category ID
                 if (parts.size == 3) {
                     list.add(Category(parts[0], parts[1], parts[2]))
                 } else if (parts.size == 2) {
-                    // Backwards compatibility for older 2-part format (name|orderType)
                     list.add(Category(java.util.UUID.randomUUID().toString(), parts[0], parts[1]))
                 }
             }
@@ -102,6 +94,42 @@ class FileHandler(private val context: Context) {
             it.write("".toByteArray())
         }
         list.forEach { saveCategory(it) }
+    }
+
+    fun saveBanner(banner: Banner) {
+        val data = "${banner.id}|${banner.imagePath}\n"
+        context.openFileOutput(bannersFile, Context.MODE_APPEND).use {
+            it.write(data.toByteArray())
+        }
+    }
+
+    fun getBanners(): List<Banner> {
+        val list = mutableListOf<Banner>()
+        val file = File(context.filesDir, bannersFile)
+        if (file.exists()) {
+            file.readLines().forEach { line ->
+                val parts = line.split("|")
+                if (parts.size == 2) {
+                    list.add(Banner(parts[0], parts[1]))
+                }
+            }
+        }
+        return list
+    }
+
+    fun deleteBanner(id: String) {
+        val banners = getBanners()
+        val bannerToDelete = banners.find { it.id == id }
+        if (bannerToDelete != null) {
+            val imgFile = File(bannerToDelete.imagePath)
+            if (imgFile.exists()) imgFile.delete()
+        }
+        
+        val newList = banners.filter { it.id != id }
+        context.openFileOutput(bannersFile, Context.MODE_PRIVATE).use {
+            it.write("".toByteArray())
+        }
+        newList.forEach { saveBanner(it) }
     }
 
     fun saveOrder(order: Order) {
@@ -129,9 +157,7 @@ class FileHandler(private val context: Context) {
                             } else null
                         }
                         orders.add(Order(parts[0], parts[1], parts[2], items, parts[4].toDouble(), parts[5], parts[6]))
-                    } catch (e: Exception) {
-                        // Skip malformed lines
-                    }
+                    } catch (e: Exception) {}
                 }
             }
         }
