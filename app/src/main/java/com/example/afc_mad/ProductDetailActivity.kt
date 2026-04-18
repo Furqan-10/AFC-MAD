@@ -58,7 +58,7 @@ class ProductDetailActivity : AppCompatActivity() {
             currentItem?.let { item ->
                 // Add main item with specified quantity
                 repeat(quantity) {
-                    CartManager.addToCart(item.copy())
+                    CartManager.addToCart(this, item.copy())
                 }
 
                 // Add selected addons with their specific quantities
@@ -66,7 +66,7 @@ class ProductDetailActivity : AppCompatActivity() {
                     val addon = addonItemsMap[id]
                     if (addon != null && qty > 0) {
                         repeat(qty) {
-                            CartManager.addToCart(addon.copy())
+                            CartManager.addToCart(this, addon.copy())
                         }
                     }
                 }

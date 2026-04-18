@@ -12,6 +12,7 @@
         android:layout_height="match_parent">
 
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/afc_black"
@@ -145,6 +146,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/homeScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -189,16 +191,17 @@
                     android:layout_marginTop="8dp" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnReorder"
+                    android:id="@+id/btnOrderNow"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_margin="16dp"
-                    android:text="REORDER"
+                    android:text="ORDER NOW"
                     android:backgroundTint="@color/afc_red"
                     android:textStyle="bold"
                     app:cornerRadius="4dp" />
 
                 <TextView
+                    android:id="@+id/tvExploreMenuHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Explore Menu"
@@ -245,6 +248,22 @@
             android:backgroundTint="@color/afc_red"
             app:cornerRadius="8dp"
             app:elevation="8dp" />
+
+        <!-- Overlay Message positioned under the tabs -->
+        <TextView
+            android:id="@+id/tvComingSoon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="140dp"
+            android:background="@drawable/bg_red_rounded"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="10dp"
+            android:text="Coming Soon"
+            android:textColor="@color/afc_white"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:elevation="10dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

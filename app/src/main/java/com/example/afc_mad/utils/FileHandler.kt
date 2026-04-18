@@ -140,6 +140,14 @@ class FileHandler(private val context: Context) {
         }
     }
 
+    fun deleteOrder(orderId: String) {
+        val orders = getOrders().filter { it.orderId != orderId }
+        context.openFileOutput(ordersFile, Context.MODE_PRIVATE).use {
+            it.write("".toByteArray())
+        }
+        orders.forEach { saveOrder(it) }
+    }
+
     fun getOrders(): List<Order> {
         val orders = mutableListOf<Order>()
         val menuItems = getMenuItems().associateBy { it.id }

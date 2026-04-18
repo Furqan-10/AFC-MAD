@@ -31,6 +31,7 @@ class HomeActivity : AppCompatActivity() {
     
     private val autoScrollHandler = Handler(Looper.getMainLooper())
     private var autoScrollRunnable: Runnable? = null
+    private val hideComingSoonHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,13 +54,14 @@ class HomeActivity : AppCompatActivity() {
         binding.ivMenuIcon.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
+
+        binding.btnOrderNow.setOnClickListener {
+            binding.homeScrollView.smoothScrollTo(0, binding.tvExploreMenuHeader.top)
+        }
     }
 
     private fun setupDrawer() {
-        // Safer access to the navigation view and its header
         val navigationView = binding.navigationView
-
-        // If header isn't there, inflate it
         if (navigationView.headerCount == 0) {
             navigationView.inflateHeaderView(R.layout.layout_drawer_header)
         }
@@ -128,7 +130,7 @@ class HomeActivity : AppCompatActivity() {
         refreshUI()
         startAutoScroll()
         updateLocationDisplay()
-        setupDrawer() // Refresh drawer every time we come back
+        setupDrawer()
     }
     
     override fun onPause() {
@@ -150,12 +152,29 @@ class HomeActivity : AppCompatActivity() {
         val buttons = listOf(binding.btnDelivery, binding.btnPickup, binding.btnMerch)
         buttons.forEach { btn ->
             btn.setOnClickListener {
+                if (btn.id == R.id.btnMerch) {
+                    showComingSoon()
+                    return@setOnClickListener
+                }
                 currentOrderType = btn.text.toString()
                 updateToggleUI(btn)
                 currentCategory = "All"
                 refreshUI()
             }
         }
+    }
+
+    private fun showComingSoon() {
+        hideComingSoonHandler.removeCallbacksAndMessages(null)
+        binding.tvComingSoon.visibility = View.VISIBLE
+        binding.tvComingSoon.alpha = 0f
+        binding.tvComingSoon.animate().alpha(1f).setDuration(300).start()
+        
+        hideComingSoonHandler.postDelayed({
+            binding.tvComingSoon.animate().alpha(0f).setDuration(300).withEndAction {
+                binding.tvComingSoon.visibility = View.GONE
+            }.start()
+        }, 2000)
     }
 
     private fun setupBanners() {

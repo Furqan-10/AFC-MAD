@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.afc_mad.databinding.ItemCartBinding
 import com.example.afc_mad.models.CartItem
+import com.example.afc_mad.utils.CartManager
 
 class CartAdapter(
     private var items: List<CartItem>,
@@ -20,22 +21,28 @@ class CartAdapter(
 
     override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
         val item = items[position]
+        val context = holder.itemView.context
+        
         holder.binding.tvCartName.text = item.menuItem.name
-        holder.binding.tvCartPrice.text = "$${item.totalLinePrice}"
+        holder.binding.tvCartPrice.text = "Rs ${item.totalLinePrice.toInt()}"
         holder.binding.tvQuantity.text = item.quantity.toString()
 
         holder.binding.btnPlus.setOnClickListener {
-            item.quantity++
+            CartManager.addToCart(context, item.menuItem)
             notifyItemChanged(position)
             onUpdate()
         }
 
         holder.binding.btnMinus.setOnClickListener {
-            if (item.quantity > 1) {
-                item.quantity--
-                notifyItemChanged(position)
+            val oldSize = items.size
+            CartManager.removeFromCart(context, item.menuItem)
+            
+            if (items.size < oldSize) {
+                // Item was removed from the list
+                notifyDataSetChanged()
             } else {
-                // In a real app, you might want to remove it from the list
+                // Quantity was just decreased
+                notifyItemChanged(position)
             }
             onUpdate()
         }

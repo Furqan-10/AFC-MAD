@@ -150,7 +150,8 @@ class ManageMenuActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MenuAdapter(fileHandler.getMenuItems()) { item ->
+        // Use isAdmin = true to show the remove icon and handle specific deletion click
+        adapter = MenuAdapter(fileHandler.getMenuItems(), isAdmin = true) { item ->
             if (!item.imagePath.isNullOrEmpty() && item.imagePath.startsWith("/")) {
                 val imgFile = File(item.imagePath)
                 if (imgFile.exists()) imgFile.delete()

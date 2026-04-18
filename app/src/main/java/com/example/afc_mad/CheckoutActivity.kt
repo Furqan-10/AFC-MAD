@@ -23,12 +23,16 @@ class CheckoutActivity : AppCompatActivity() {
 
         val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
         val phone = sharedPref.getString("user_phone", "") ?: ""
-        val address = sharedPref.getString("user_address", "") ?: ""
+        val address = sharedPref.getString("user_address", "Not provided") ?: "Not provided"
 
-        binding.tvOrderSummary.text = "Shipping to: $address\nTotal: $${String.format("%.2f", CartManager.getTotalPrice())}"
+        // Update the new dedicated UI fields
+        binding.tvOrderAddress.text = "Address: $address"
+        binding.tvOrderTotal.text = "Total: Rs ${CartManager.getTotalPrice().toInt()}"
 
         binding.btnPlaceOrder.setOnClickListener {
-            val paymentMethod = if (binding.rbCash.isChecked) "Cash" else "Card"
+            // Logic always uses Cash as Card is disabled in UI
+            val paymentMethod = "Cash" 
+
             val order = Order(
                 orderId = UUID.randomUUID().toString().substring(0, 8),
                 userPhone = phone,
@@ -39,7 +43,7 @@ class CheckoutActivity : AppCompatActivity() {
             )
 
             fileHandler.saveOrder(order)
-            CartManager.clearCart()
+            CartManager.clearCart(this)
             Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_LONG).show()
             
             val intent = android.content.Intent(this, HomeActivity::class.java)

@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@color/afc_white">
+    android:background="@color/afc_black">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/checkout_title"
+        android:text="Checkout"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="@color/afc_red"
@@ -19,26 +19,33 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="@dimen/corner_radius_card"
-        app:cardElevation="2dp"
-        app:strokeColor="@color/afc_light_gray"
-        app:strokeWidth="1dp">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/afc_dark_grey">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <TextView
-                android:id="@+id/tvOrderSummary"
+                android:id="@+id/tvOrderAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Order Summary"
+                android:text="Address: ..."
+                android:textSize="16sp"
+                android:textColor="@color/afc_white"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvOrderTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total: Rs 0"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/afc_black"
-                android:layout_marginBottom="16dp"/>
+                android:textColor="@color/afc_white"/>
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -49,40 +56,54 @@
         android:text="Select Payment Method:"
         android:textColor="@color/afc_text_secondary"
         android:textStyle="bold"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="32dp"/>
 
     <RadioGroup
         android:id="@+id/rgPayment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="12dp">
+
         <RadioButton
             android:id="@+id/rbCash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cash on Delivery"
             android:buttonTint="@color/afc_red"
+            android:textColor="@color/afc_white"
             android:checked="true"/>
+
         <RadioButton
             android:id="@+id/rbCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:buttonTint="@color/afc_red"
-            android:text="Card (Simulated)"/>
+            android:text="Card (Not available yet)"
+            android:buttonTint="@color/afc_dark_grey"
+            android:textColor="@color/afc_text_secondary"
+            android:enabled="false"
+            android:layout_marginTop="8dp"/>
     </RadioGroup>
+
+    <!-- Placeholder for hidden summary view if referenced in code -->
+    <TextView
+        android:id="@+id/tvOrderSummary"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPlaceOrder"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height"
-        android:text="@string/place_order"
+        android:layout_height="56dp"
+        android:text="PLACE ORDER"
         android:backgroundTint="@color/afc_red"
         android:textColor="@color/afc_white"
-        app:cornerRadius="@dimen/corner_radius_button" />
+        android:textStyle="bold"
+        app:cornerRadius="8dp" />
 
 </LinearLayout>

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/afc_black"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/tvCartTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Cart"
+        android:text="My Bucket"
+        android:textColor="@color/afc_white"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -34,17 +37,19 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
+            android:background="@color/afc_dark_grey"
             android:layout_marginBottom="8dp" />
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Total:"
+                android:textColor="@color/afc_white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -53,18 +58,33 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:text="$0.00"
+                android:text="Rs 0"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/design_default_color_primary" />
+                android:textColor="@color/afc_white" />
         </RelativeLayout>
 
-        <Button
+        <!-- New Empty Cart Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEmptyCart"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:text="EMPTY BUCKET"
+            android:textColor="@color/afc_red"
+            app:strokeColor="@color/afc_red"
+            app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCheckout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Proceed to Checkout"
-            android:layout_marginTop="16dp" />
+            android:layout_height="56dp"
+            android:text="PROCEED TO CHECKOUT"
+            android:backgroundTint="@color/afc_red"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            android:layout_marginTop="12dp" />
 
     </LinearLayout>
 

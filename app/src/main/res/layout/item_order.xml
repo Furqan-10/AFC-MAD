@@ -4,6 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/afc_dark_grey"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp">
 
     <LinearLayout
@@ -12,44 +14,77 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvOrderId"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvOrderUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
-
-        <TextView
-            android:id="@+id/tvOrderItems"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="12sp" />
-
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
+            android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tvOrderTotal"
+                android:id="@+id/tvOrderId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/afc_red"
                 android:textStyle="bold"
-                android:textColor="@color/design_default_color_primary" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/tvOrderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:text="Pending" />
+                android:text="Pending"
+                android:textColor="@color/afc_white"
+                android:textStyle="bold"
+                android:textSize="12sp" />
         </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tvOrderUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/afc_white"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/afc_black" />
+
+        <TextView
+            android:id="@+id/tvOrderItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/afc_white"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/afc_black" />
+
+        <TextView
+            android:id="@+id/tvOrderTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/afc_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDelivered"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:text="DELIVER"
+            android:textColor="@color/afc_white"
+            android:textStyle="bold"
+            app:backgroundTint="@color/afc_red"
+            app:cornerRadius="8dp" />
 
     </LinearLayout>
 
