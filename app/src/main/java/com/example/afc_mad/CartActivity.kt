@@ -8,21 +8,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.afc_mad.adapters.CartAdapter
 import com.example.afc_mad.databinding.ActivityCartBinding
 import com.example.afc_mad.utils.CartManager
-import com.example.afc_mad.utils.FileHandler
 
 class CartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCartBinding
     private lateinit var adapter: CartAdapter
-    private lateinit var fileHandler: FileHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCartBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        fileHandler = FileHandler(this)
-        // Ensure cart is initialized from local storage
-        CartManager.init(this, fileHandler)
 
         setupRecyclerView()
         updateTotal()

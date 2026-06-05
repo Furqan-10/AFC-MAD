@@ -2,8 +2,11 @@ package com.example.afc_mad
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,29 +17,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.afc_mad.models.Banner
-import com.example.afc_mad.utils.FileHandler
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import com.google.firebase.database.*
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 
 class ManageBannersActivity : AppCompatActivity() {
 
-    private lateinit var fileHandler: FileHandler
     private lateinit var rvBanners: RecyclerView
     private lateinit var bannerAdapter: AdminBannerAdapter
+    
+    private val database = FirebaseDatabase.getInstance().getReference("banners")
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data ?: return@registerForActivityResult
-            val path = saveImageToInternalStorage(uri)
-            if (path != null) {
-                val banner = Banner(UUID.randomUUID().toString(), path)
-                fileHandler.saveBanner(banner)
-                loadBanners()
-                Toast.makeText(this, "Banner Added", Toast.LENGTH_SHORT).show()
-            }
+            uploadBanner(uri)
         }
     }
 
@@ -44,7 +41,6 @@ class ManageBannersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_banners)
 
-        fileHandler = FileHandler(this)
         rvBanners = findViewById(R.id.rvBanners)
         
         findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
@@ -59,41 +55,60 @@ class ManageBannersActivity : AppCompatActivity() {
         }
 
         setupRecyclerView()
-        loadBanners()
+        loadBannersFromFirebase()
     }
 
     private fun setupRecyclerView() {
-        bannerAdapter = AdminBannerAdapter(mutableListOf()) { bannerId ->
-            fileHandler.deleteBanner(bannerId)
-            loadBanners()
+        bannerAdapter = AdminBannerAdapter(mutableListOf()) { banner ->
+            database.child(banner.id).removeValue()
         }
         rvBanners.layoutManager = GridLayoutManager(this, 2)
         rvBanners.adapter = bannerAdapter
     }
 
-    private fun loadBanners() {
-        bannerAdapter.updateList(fileHandler.getBanners())
+    private fun loadBannersFromFirebase() {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Banner>()
+                for (child in snapshot.children) {
+                    val b = child.getValue(Banner::class.java)
+                    if (b != null) list.add(b)
+                }
+                bannerAdapter.updateList(list)
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
-    private fun saveImageToInternalStorage(uri: Uri): String? {
-        return try {
-            val fileName = "banner_${System.currentTimeMillis()}.jpg"
-            val file = File(filesDir, fileName)
-            val inputStream = contentResolver.openInputStream(uri) ?: return null
-            inputStream.use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
-                }
+    private fun uploadBanner(uri: Uri) {
+        val base64Image = uriToBase64(uri)
+        if (base64Image != null) {
+            val id = database.push().key ?: UUID.randomUUID().toString()
+            val banner = Banner(id, base64Image)
+            database.child(id).setValue(banner).addOnSuccessListener {
+                Toast.makeText(this, "Banner Added", Toast.LENGTH_SHORT).show()
             }
-            file.absolutePath
-        } catch (e: IOException) {
+        }
+    }
+
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream)
+            val bytes = outputStream.toByteArray()
+            Base64.encodeToString(bytes, Base64.DEFAULT)
+        } catch (e: Exception) {
             null
         }
     }
 
     inner class AdminBannerAdapter(
         private var list: List<Banner>,
-        private val onDelete: (String) -> Unit
+        private val onDelete: (Banner) -> Unit
     ) : RecyclerView.Adapter<AdminBannerAdapter.VH>() {
 
         fun updateList(newList: List<Banner>) {
@@ -108,8 +123,9 @@ class ManageBannersActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val item = list[position]
-            holder.ivImage.setImageURI(Uri.fromFile(File(item.imagePath)))
-            holder.btnDelete.setOnClickListener { onDelete(item.id) }
+            val imageBytes = Base64.decode(item.imagePath, Base64.DEFAULT)
+            Glide.with(holder.ivImage.context).asBitmap().load(imageBytes).into(holder.ivImage)
+            holder.btnDelete.setOnClickListener { onDelete(item) }
         }
 
         override fun getItemCount() = list.size

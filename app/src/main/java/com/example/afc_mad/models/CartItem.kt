@@ -3,9 +3,9 @@ package com.example.afc_mad.models
 import java.io.Serializable
 
 data class CartItem(
-    val menuItem: MenuItem,
+    val product: Product,
     var quantity: Int
 ) : Serializable {
     val totalLinePrice: Double
-        get() = menuItem.price * quantity
+        get() = (product.price * quantity).toDouble()
 }

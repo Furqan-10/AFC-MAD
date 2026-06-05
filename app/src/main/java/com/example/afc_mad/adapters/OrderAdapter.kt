@@ -2,7 +2,6 @@ package com.example.afc_mad.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.afc_mad.databinding.ItemOrderBinding
 import com.example.afc_mad.models.Order
@@ -24,11 +23,10 @@ class OrderAdapter(
         holder.binding.tvOrderId.text = "Order ID: ${order.orderId}"
         holder.binding.tvOrderUser.text = "User: ${order.userPhone}\nAddress: ${order.userAddress}"
         
-        // Group items to show total count of each unique item in the order
         val itemsSummary = order.items
-            .groupBy { it.menuItem.id }
+            .groupBy { it.product.id }
             .map { (id, items) -> 
-                val name = items[0].menuItem.name
+                val name = items[0].product.name
                 val totalQty = items.sumOf { it.quantity }
                 "$name x$totalQty"
             }

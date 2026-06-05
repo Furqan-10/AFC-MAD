@@ -23,25 +23,23 @@ class CartAdapter(
         val item = items[position]
         val context = holder.itemView.context
         
-        holder.binding.tvCartName.text = item.menuItem.name
+        holder.binding.tvCartName.text = item.product.name
         holder.binding.tvCartPrice.text = "Rs ${item.totalLinePrice.toInt()}"
         holder.binding.tvQuantity.text = item.quantity.toString()
 
         holder.binding.btnPlus.setOnClickListener {
-            CartManager.addToCart(context, item.menuItem)
+            CartManager.addToCart(context, item.product)
             notifyItemChanged(position)
             onUpdate()
         }
 
         holder.binding.btnMinus.setOnClickListener {
             val oldSize = items.size
-            CartManager.removeFromCart(context, item.menuItem)
+            CartManager.removeFromCart(context, item.product)
             
             if (items.size < oldSize) {
-                // Item was removed from the list
                 notifyDataSetChanged()
             } else {
-                // Quantity was just decreased
                 notifyItemChanged(position)
             }
             onUpdate()

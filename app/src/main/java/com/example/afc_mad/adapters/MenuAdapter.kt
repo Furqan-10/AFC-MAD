@@ -1,20 +1,18 @@
 package com.example.afc_mad.adapters
 
-import android.graphics.BitmapFactory
+import android.util.Base64
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.afc_mad.R
+import com.bumptech.glide.Glide
 import com.example.afc_mad.databinding.ItemMenuBinding
 import com.example.afc_mad.databinding.ItemMenuAdminBinding
-import com.example.afc_mad.models.MenuItem
-import java.io.File
+import com.example.afc_mad.models.Product
 
 class MenuAdapter(
-    private var items: List<MenuItem>,
+    private var items: List<Product>,
     private val isAdmin: Boolean = false,
-    private val onItemClick: (MenuItem) -> Unit
+    private val onItemClick: (Product) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
@@ -36,56 +34,44 @@ class MenuAdapter(
         val item = items[position]
         if (holder is AdminViewHolder) {
             holder.binding.tvName.text = item.name
-            holder.binding.tvPrice.text = "Rs ${item.price.toInt()}"
-            holder.binding.tvCategory.text = item.category
-            loadImage(holder.binding.ivFood, item.imagePath)
+            holder.binding.tvPrice.text = "Rs ${item.price}"
+            holder.binding.tvCategory.text = item.categoryId
             
-            // Admin-only: clicking the remove icon deletes the item
+            try {
+                val imageBytes = Base64.decode(item.imageUrl, Base64.DEFAULT)
+                Glide.with(holder.binding.ivFood.context)
+                    .asBitmap()
+                    .load(imageBytes)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .into(holder.binding.ivFood)
+            } catch (e: Exception) {
+                holder.binding.ivFood.setImageResource(android.R.drawable.ic_menu_report_image)
+            }
+            
             holder.binding.btnRemoveItem.setOnClickListener { onItemClick(item) }
         } else if (holder is CustomerViewHolder) {
             holder.binding.tvName.text = item.name
-            holder.binding.tvPrice.text = "Rs ${item.price.toInt()}"
-            holder.binding.tvCategory.text = item.category
-            loadImage(holder.binding.ivFood, item.imagePath)
+            holder.binding.tvPrice.text = "Rs ${item.price}"
+            holder.binding.tvCategory.text = item.categoryId
             
-            // Customer: clicking the whole card opens details
-            holder.itemView.setOnClickListener { onItemClick(item) }
-        }
-    }
-
-    private fun loadImage(imageView: android.widget.ImageView, path: String?) {
-        imageView.setImageBitmap(null)
-        imageView.setImageDrawable(null)
-
-        if (path.isNullOrEmpty() || path == "none") {
-            imageView.setImageResource(android.R.drawable.ic_menu_gallery)
-            return
-        }
-
-        try {
-            if (path.startsWith("/")) {
-                val imgFile = File(path)
-                if (imgFile.exists() && imgFile.length() > 0) {
-                    val bitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
-                    if (bitmap != null) imageView.setImageBitmap(bitmap)
-                    else imageView.setImageResource(android.R.drawable.ic_menu_report_image)
-                } else {
-                    imageView.setImageResource(android.R.drawable.ic_menu_report_image)
-                }
-            } else {
-                val context = imageView.context
-                val resourceId = context.resources.getIdentifier(path, "drawable", context.packageName)
-                if (resourceId != 0) imageView.setImageResource(resourceId)
-                else imageView.setImageResource(android.R.drawable.ic_menu_gallery)
+            try {
+                val imageBytes = Base64.decode(item.imageUrl, Base64.DEFAULT)
+                Glide.with(holder.binding.ivFood.context)
+                    .asBitmap()
+                    .load(imageBytes)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .into(holder.binding.ivFood)
+            } catch (e: Exception) {
+                holder.binding.ivFood.setImageResource(android.R.drawable.ic_menu_report_image)
             }
-        } catch (e: Exception) {
-            imageView.setImageResource(android.R.drawable.ic_menu_report_image)
+            
+            holder.itemView.setOnClickListener { onItemClick(item) }
         }
     }
 
     override fun getItemCount(): Int = items.size
 
-    fun updateItems(newItems: List<MenuItem>) {
+    fun updateItems(newItems: List<Product>) {
         items = newItems
         notifyDataSetChanged()
     }

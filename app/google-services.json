@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "725174181519",
+    "firebase_url": "https://afc-mad-default-rtdb.firebaseio.com",
+    "project_id": "afc-mad",
+    "storage_bucket": "afc-mad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725174181519:android:eef587a8b716335ef31afa",
+        "android_client_info": {
+          "package_name": "com.example.afc_mad"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZPCuPlKvLljv8C6ezDKIjeXQ5Q7VGDaY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

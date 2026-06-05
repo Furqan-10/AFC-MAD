@@ -5,29 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.afc_mad.models.Category
-import com.example.afc_mad.utils.FileHandler
+import com.google.firebase.database.*
 import java.util.UUID
 
 class ManageCategoriesActivity : AppCompatActivity() {
 
-    private lateinit var fileHandler: FileHandler
     private lateinit var rgOrderType: RadioGroup
     private lateinit var rvCategories: RecyclerView
     private lateinit var etNewCategory: EditText
     private lateinit var btnAddCategory: Button
     private var selectedOrderType = "Delivery"
     private lateinit var adapter: CategoryAdapter
+    
+    private val database = FirebaseDatabase.getInstance().getReference("categories")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_categories)
-
-        fileHandler = FileHandler(this)
 
         rgOrderType = findViewById(R.id.rgOrderType)
         rvCategories = findViewById(R.id.rvCategories)
@@ -38,7 +36,7 @@ class ManageCategoriesActivity : AppCompatActivity() {
             .setNavigationOnClickListener { finish() }
 
         setupRecyclerView()
-        loadCategories()
+        loadCategoriesFromFirebase()
 
         rgOrderType.setOnCheckedChangeListener { _, checkedId ->
             selectedOrderType = when (checkedId) {
@@ -46,39 +44,52 @@ class ManageCategoriesActivity : AppCompatActivity() {
                 R.id.rbMerch -> "Merch"
                 else -> "Delivery"
             }
-            loadCategories()
+            loadCategoriesFromFirebase()
         }
 
         btnAddCategory.setOnClickListener {
             val name = etNewCategory.text.toString().trim()
             if (name.isNotEmpty()) {
-                val exists = fileHandler.getCategories().any { 
-                    it.name.equals(name, ignoreCase = true) && it.orderType == selectedOrderType 
-                }
-                if (!exists) {
-                    val category = Category(UUID.randomUUID().toString(), name, selectedOrderType)
-                    fileHandler.saveCategory(category)
-                    etNewCategory.text.clear()
-                    loadCategories()
-                } else {
-                    Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show()
-                }
+                saveCategoryToFirebase(name)
             }
         }
     }
 
     private fun setupRecyclerView() {
         adapter = CategoryAdapter(mutableListOf()) { category ->
-            fileHandler.deleteCategory(category.id)
-            loadCategories()
+            database.child(category.id).removeValue()
         }
         rvCategories.layoutManager = LinearLayoutManager(this)
         rvCategories.adapter = adapter
     }
 
-    private fun loadCategories() {
-        val categories = fileHandler.getCategories().filter { it.orderType == selectedOrderType }
-        adapter.updateList(categories)
+    private fun loadCategoriesFromFirebase() {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Category>()
+                for (child in snapshot.children) {
+                    val cat = child.getValue(Category::class.java)
+                    if (cat != null && cat.orderType == selectedOrderType) {
+                        list.add(cat)
+                    }
+                }
+                adapter.updateList(list)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@ManageCategoriesActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+    
+    private fun saveCategoryToFirebase(name: String) {
+        val id = database.push().key ?: UUID.randomUUID().toString()
+        val category = Category(id, name, selectedOrderType)
+        
+        database.child(id).setValue(category).addOnSuccessListener {
+            etNewCategory.text.clear()
+            Toast.makeText(this, "Category Added", Toast.LENGTH_SHORT).show()
+        }
     }
 
     inner class CategoryAdapter(
@@ -100,7 +111,6 @@ class ManageCategoriesActivity : AppCompatActivity() {
             val item = list[position]
             holder.tvName.text = item.name
             holder.btnDelete.setOnClickListener { onDelete(item) }
-            // Hide edit button for now to keep it simple
             holder.btnEdit.visibility = View.GONE
         }
 

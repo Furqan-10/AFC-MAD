@@ -1,12 +1,12 @@
 package com.example.afc_mad.adapters
 
-import android.net.Uri
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.afc_mad.databinding.ItemBannerBinding
 import com.example.afc_mad.models.Banner
-import java.io.File
 
 class BannerAdapter(private val banners: List<Banner>) : RecyclerView.Adapter<BannerAdapter.BannerViewHolder>() {
 
@@ -19,9 +19,14 @@ class BannerAdapter(private val banners: List<Banner>) : RecyclerView.Adapter<Ba
 
     override fun onBindViewHolder(holder: BannerViewHolder, position: Int) {
         val banner = banners[position]
-        val file = File(banner.imagePath)
-        if (file.exists()) {
-            holder.binding.ivBanner.setImageURI(Uri.fromFile(file))
+        try {
+            val imageBytes = Base64.decode(banner.imagePath, Base64.DEFAULT)
+            Glide.with(holder.binding.ivBanner.context)
+                .asBitmap()
+                .load(imageBytes)
+                .into(holder.binding.ivBanner)
+        } catch (e: Exception) {
+            holder.binding.ivBanner.setImageResource(android.R.drawable.ic_menu_report_image)
         }
     }
 

@@ -1,0 +1,14 @@
+package com.example.afc_mad.models
+
+import java.io.Serializable
+
+data class Product(
+    var id: String = "",
+    var name: String = "",
+    var description: String = "",
+    var price: Int = 0,
+    var categoryId: String = "",
+    var imageUrl: String = "",
+    var available: Boolean = true,
+    var rating: Double = 0.0
+) : Serializable

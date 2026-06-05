@@ -1,7 +1,7 @@
 package com.example.afc_mad
 
-import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,32 +11,32 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.afc_mad.databinding.ActivityProductDetailBinding
-import com.example.afc_mad.models.MenuItem
+import com.example.afc_mad.models.Product
 import com.example.afc_mad.utils.CartManager
-import com.example.afc_mad.utils.FileHandler
-import java.io.File
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class ProductDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductDetailBinding
-    private lateinit var fileHandler: FileHandler
     private var quantity = 1
-    private var currentItem: MenuItem? = null
+    private var currentProduct: Product? = null
 
-    // Track addon quantities: Item ID -> Quantity
     private val addonQuantities = mutableMapOf<String, Int>()
-    private val addonItemsMap = mutableMapOf<String, MenuItem>()
+    private val addonItemsMap = mutableMapOf<String, Product>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        fileHandler = FileHandler(this)
-        currentItem = intent.getSerializableExtra("menu_item") as? MenuItem
+        currentProduct = intent.getSerializableExtra("product") as? Product
 
-        if (currentItem != null) {
-            setupUI(currentItem!!)
+        if (currentProduct != null) {
+            setupUI(currentProduct!!)
             setupDrinksSection()
         }
 
@@ -55,18 +55,16 @@ class ProductDetailActivity : AppCompatActivity() {
         }
 
         binding.btnAddToCart.setOnClickListener {
-            currentItem?.let { item ->
-                // Add main item with specified quantity
+            currentProduct?.let { product ->
                 repeat(quantity) {
-                    CartManager.addToCart(this, item.copy())
+                    CartManager.addToCart(this, product)
                 }
 
-                // Add selected addons with their specific quantities
                 addonQuantities.forEach { (id, qty) ->
                     val addon = addonItemsMap[id]
                     if (addon != null && qty > 0) {
                         repeat(qty) {
-                            CartManager.addToCart(this, addon.copy())
+                            CartManager.addToCart(this, addon)
                         }
                     }
                 }
@@ -77,18 +75,28 @@ class ProductDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupUI(item: MenuItem) {
-        binding.tvDetailName.text = item.name
-        binding.tvOptionName.text = item.name
-        binding.tvDetailDescription.text = item.description
-        binding.tvDetailPriceLabel.text = "Rs ${item.price.toInt()}"
+    private fun setupUI(product: Product) {
+        binding.tvDetailName.text = product.name
+        binding.tvOptionName.text = product.name
+        binding.tvDetailDescription.text = product.description
+        binding.tvDetailPriceLabel.text = "Rs ${product.price}"
 
-        loadImage(item)
+        try {
+            val imageBytes = Base64.decode(product.imageUrl, Base64.DEFAULT)
+            Glide.with(this)
+                .asBitmap()
+                .load(imageBytes)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(binding.ivProductImage)
+        } catch (e: Exception) {
+            binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_report_image)
+        }
+            
         updateQuantityUI()
     }
 
     private fun setupDrinksSection() {
-        val isCurrentItemADrink = currentItem?.category?.contains("Drink", ignoreCase = true) == true
+        val isCurrentItemADrink = currentProduct?.categoryId?.contains("Drink", ignoreCase = true) == true
 
         if (isCurrentItemADrink) {
             binding.tvDrinkSectionLabel.visibility = View.GONE
@@ -96,71 +104,53 @@ class ProductDetailActivity : AppCompatActivity() {
             return
         }
 
-        val allMenu = fileHandler.getMenuItems()
-        val drinks = allMenu.filter { it.category.contains("Drink", ignoreCase = true) }
+        FirebaseDatabase.getInstance().getReference("products")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val drinks = mutableListOf<Product>()
+                    for (child in snapshot.children) {
+                        val product = child.getValue(Product::class.java)
+                        if (product != null && product.categoryId.contains("Drink", ignoreCase = true)) {
+                            drinks.add(product)
+                            addonItemsMap[product.id] = product
+                        }
+                    }
+                    
+                    if (drinks.isEmpty()) {
+                        binding.tvDrinkSectionLabel.visibility = View.GONE
+                        binding.rvDrinks.visibility = View.GONE
+                    } else {
+                        binding.tvDrinkSectionLabel.visibility = View.VISIBLE
+                        binding.rvDrinks.visibility = View.VISIBLE
+                        binding.rvDrinks.layoutManager = LinearLayoutManager(this@ProductDetailActivity)
+                        binding.rvDrinks.adapter = AddonAdapter(drinks) { product, qty ->
+                            addonQuantities[product.id] = qty
+                            updateQuantityUI()
+                        }
+                    }
+                }
 
-        if (drinks.isEmpty()) {
-            binding.tvDrinkSectionLabel.visibility = View.GONE
-            binding.rvDrinks.visibility = View.GONE
-        } else {
-            binding.tvDrinkSectionLabel.visibility = View.VISIBLE
-            binding.rvDrinks.visibility = View.VISIBLE
-            binding.rvDrinks.layoutManager = LinearLayoutManager(this)
-
-            drinks.forEach { addonItemsMap[it.id] = it }
-
-            binding.rvDrinks.adapter = AddonAdapter(drinks) { item, qty ->
-                addonQuantities[item.id] = qty
-                updateQuantityUI()
-            }
-        }
+                override fun onCancelled(error: DatabaseError) {}
+            })
     }
 
     private fun updateQuantityUI() {
         binding.tvQuantity.text = quantity.toString()
 
-        val mainTotalPrice = (currentItem?.price ?: 0.0) * quantity
-        var addonTotalPrice = 0.0
+        val mainTotalPrice = (currentProduct?.price ?: 0) * quantity
+        var addonTotalPrice = 0
 
         addonQuantities.forEach { (id, qty) ->
-            val price = addonItemsMap[id]?.price ?: 0.0
+            val price = addonItemsMap[id]?.price ?: 0
             addonTotalPrice += (price * qty)
         }
 
-        binding.tvDetailPrice.text = "Rs ${(mainTotalPrice + addonTotalPrice).toInt()}"
-    }
-
-    private fun loadImage(item: MenuItem) {
-        val path = item.imagePath
-        if (path.isNullOrEmpty() || path == "none") {
-            binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_gallery)
-            return
-        }
-
-        try {
-            if (path.startsWith("/")) {
-                val imgFile = File(path)
-                if (imgFile.exists() && imgFile.length() > 0) {
-                    binding.ivProductImage.setImageURI(Uri.fromFile(imgFile))
-                } else {
-                    binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_report_image)
-                }
-            } else {
-                val resourceId = resources.getIdentifier(path, "drawable", packageName)
-                if (resourceId != 0) {
-                    binding.ivProductImage.setImageResource(resourceId)
-                } else {
-                    binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_gallery)
-                }
-            }
-        } catch (e: Exception) {
-            binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_report_image)
-        }
+        binding.tvDetailPrice.text = "Rs ${mainTotalPrice + addonTotalPrice}"
     }
 
     inner class AddonAdapter(
-        private val list: List<MenuItem>,
-        private val onQuantityChange: (MenuItem, Int) -> Unit
+        private val list: List<Product>,
+        private val onQuantityChange: (Product, Int) -> Unit
     ) : RecyclerView.Adapter<AddonAdapter.VH>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -172,7 +162,7 @@ class ProductDetailActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: VH, position: Int) {
             val item = list[position]
             holder.tvName.text = item.name
-            holder.tvPrice.text = "Rs ${item.price.toInt()}"
+            holder.tvPrice.text = "Rs ${item.price}"
 
             val currentQty = addonQuantities[item.id] ?: 0
             holder.tvQty.text = currentQty.toString()

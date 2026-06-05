@@ -1,5 +1,6 @@
 package com.example.afc_mad
 
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.view.animation.ScaleAnimation
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class SplashActivity : AppCompatActivity() {
 
@@ -22,14 +24,12 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Modern System UI Hiding
         hideSystemUI()
 
         val iconBg = findViewById<View>(R.id.ivIconBg)
         val iconFg = findViewById<ImageView>(R.id.ivIconFg)
         val textGroup = findViewById<LinearLayout>(R.id.textGroup)
 
-        // 1. ScaleAnimation for Foreground (0.8 to 1.0)
         val scaleAnim = ScaleAnimation(
             0.8f, 1.0f, 0.8f, 1.0f,
             Animation.RELATIVE_TO_SELF, 0.5f,
@@ -41,7 +41,6 @@ class SplashActivity : AppCompatActivity() {
         }
         iconFg.startAnimation(scaleAnim)
 
-        // 2. AlphaAnimation for Background Layer (Fade In)
         val bgFadeAnim = AlphaAnimation(0f, 1f).apply {
             duration = 1000
             startOffset = 200
@@ -49,7 +48,6 @@ class SplashActivity : AppCompatActivity() {
         }
         iconBg.startAnimation(bgFadeAnim)
 
-        // 3. AlphaAnimation for Text Group (Fade In)
         val textFadeAnim = AlphaAnimation(0f, 1f).apply {
             duration = 1000
             startOffset = 600
@@ -57,12 +55,28 @@ class SplashActivity : AppCompatActivity() {
         }
         textGroup.startAnimation(textFadeAnim)
 
-        // Navigation Logic: 2200ms delay
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, LoginActivity::class.java))
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-            finish()
+            checkAuthAndNavigate()
         }, 2200)
+    }
+
+    private fun checkAuthAndNavigate() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+            val role = sharedPref.getString("user_role", "customer")
+            
+            val intent = if (role == "admin") {
+                Intent(this, AdminHomeActivity::class.java)
+            } else {
+                Intent(this, HomeActivity::class.java)
+            }
+            startActivity(intent)
+        } else {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        finish()
     }
 
     private fun hideSystemUI() {

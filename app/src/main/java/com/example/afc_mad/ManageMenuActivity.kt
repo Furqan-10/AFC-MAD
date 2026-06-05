@@ -2,8 +2,11 @@ package com.example.afc_mad
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,32 +14,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.afc_mad.adapters.MenuAdapter
 import com.example.afc_mad.databinding.ActivityManageMenuBinding
-import com.example.afc_mad.models.MenuItem
+import com.example.afc_mad.models.Category
+import com.example.afc_mad.models.Product
 import com.example.afc_mad.utils.FileHandler
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import com.google.firebase.database.*
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 class ManageMenuActivity : AppCompatActivity() {
     private lateinit var binding: ActivityManageMenuBinding
     private lateinit var fileHandler: FileHandler
     private lateinit var adapter: MenuAdapter
-    private var savedImagePath: String? = null
+    private var selectedImageUri: Uri? = null
+    
+    private val productsDb = FirebaseDatabase.getInstance().getReference("products")
+    private val categoriesDb = FirebaseDatabase.getInstance().getReference("categories")
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val uri = result.data?.data ?: return@registerForActivityResult
-            val path = saveImageToInternalStorage(uri)
-            if (path != null) {
-                savedImagePath = path
-                binding.ivSelectedImage.setImageURI(Uri.fromFile(File(path)))
-                binding.ivSelectedImage.imageTintList = null
-                binding.tvImagePlaceholder.text = "Image Selected ✓"
-            } else {
-                Toast.makeText(this, "Failed to save image. Try again.", Toast.LENGTH_SHORT).show()
-                binding.tvImagePlaceholder.text = "Image failed — tap to retry"
-            }
+            selectedImageUri = result.data?.data ?: return@registerForActivityResult
+            binding.ivSelectedImage.setImageURI(selectedImageUri)
+            binding.ivSelectedImage.imageTintList = null
+            binding.tvImagePlaceholder.text = "Image Selected ✓"
         }
     }
 
@@ -47,13 +46,11 @@ class ManageMenuActivity : AppCompatActivity() {
 
         fileHandler = FileHandler(this)
         setupRecyclerView()
-        
-        // Initial setup for category dropdown based on default "Delivery" selection
+        loadProductsFromFirebase()
         refreshCategoryDropdown()
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Refresh category dropdown when order type changes
         binding.rgOrderType.setOnCheckedChangeListener { _, _ ->
             refreshCategoryDropdown()
         }
@@ -62,7 +59,6 @@ class ManageMenuActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "image/*"
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             }
             pickImageLauncher.launch(intent)
         }
@@ -72,38 +68,78 @@ class ManageMenuActivity : AppCompatActivity() {
             val priceStr = binding.etItemPrice.text.toString().trim()
             val desc = binding.etItemDesc.text.toString().trim()
             val category = binding.spinnerCategory.text.toString()
-            
-            // Get order type from RadioGroup (3 options: Delivery, Pickup, Merch)
-            val orderType = when (binding.rgOrderType.checkedRadioButtonId) {
-                R.id.rbPickup -> "Pickup"
-                R.id.rbMerch -> "Merch"
-                else -> "Delivery"
-            }
 
-            if (name.isEmpty() || priceStr.isEmpty() || category.isEmpty()) {
-                Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show()
+            if (name.isEmpty() || priceStr.isEmpty() || category.isEmpty() || selectedImageUri == null) {
+                Toast.makeText(this, "Please fill all fields and select an image", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            try {
-                val price = priceStr.toDouble()
-                val item = MenuItem(
-                    id = UUID.randomUUID().toString().substring(0, 6),
-                    name = name,
-                    price = price,
-                    description = desc,
-                    category = category,
-                    imagePath = savedImagePath,
-                    orderType = orderType
-                )
-                fileHandler.saveMenuItem(item)
+            saveProductToFirebase(name, priceStr.toInt(), desc, category)
+        }
+    }
+
+    private fun saveProductToFirebase(name: String, price: Int, desc: String, category: String) {
+        setLoading(true)
+        val base64Image = uriToBase64(selectedImageUri!!)
+        
+        if (base64Image == null) {
+            setLoading(false)
+            Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val productId = productsDb.push().key ?: UUID.randomUUID().toString()
+        val product = Product(productId, name, desc, price, category, base64Image)
+
+        productsDb.child(productId).setValue(product)
+            .addOnSuccessListener {
+                setLoading(false)
                 Toast.makeText(this, "Product Added Successfully", Toast.LENGTH_SHORT).show()
                 clearFields()
-                updateList()
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+            .addOnFailureListener {
+                setLoading(false)
+                Toast.makeText(this, "Database Error: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+            
+            val outputStream = ByteArrayOutputStream()
+            // Compress significantly to stay under DB limits and improve performance
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream)
+            val bytes = outputStream.toByteArray()
+            Base64.encodeToString(bytes, Base64.DEFAULT)
+        } catch (e: Exception) {
+            null
         }
+    }
+
+    private fun loadProductsFromFirebase() {
+        productsDb.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val productList = mutableListOf<Product>()
+                for (child in snapshot.children) {
+                    val product = child.getValue(Product::class.java)
+                    if (product != null) productList.add(product)
+                }
+                adapter.updateItems(productList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun setupRecyclerView() {
+        adapter = MenuAdapter(mutableListOf(), isAdmin = true) { product ->
+            productsDb.child(product.id).removeValue()
+        }
+        binding.rvAdminMenu.layoutManager = LinearLayoutManager(this)
+        binding.rvAdminMenu.adapter = adapter
     }
 
     private fun refreshCategoryDropdown() {
@@ -113,59 +149,27 @@ class ManageMenuActivity : AppCompatActivity() {
             else -> "Delivery"
         }
         
-        // Fetch categories added via "Manage Categories" filtered by service type
-        val categories = fileHandler.getCategories()
-            .filter { it.orderType.equals(selectedOrderType, ignoreCase = true) }
-            .map { it.name }
-            .toTypedArray()
-            
-        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categories)
-        binding.spinnerCategory.setAdapter(adapter)
-        
-        // Clear previous selection if it's not valid for the new type
-        binding.spinnerCategory.text.clear()
-        if (categories.isEmpty()) {
-            binding.spinnerCategory.hint = "No categories for $selectedOrderType"
-        } else {
-            binding.spinnerCategory.hint = "Select Category"
-        }
-    }
-
-    private fun saveImageToInternalStorage(uri: Uri): String? {
-        return try {
-            val fileName = "img_${System.currentTimeMillis()}.jpg"
-            val file = File(filesDir, fileName)
-            val inputStream = contentResolver.openInputStream(uri)
-                ?: throw IOException("Cannot open URI stream")
-            inputStream.use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
+        categoriesDb.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val categories = mutableListOf<String>()
+                for (child in snapshot.children) {
+                    val cat = child.getValue(Category::class.java)
+                    if (cat != null && cat.orderType == selectedOrderType) {
+                        categories.add(cat.name)
+                    }
                 }
+                val adapter = ArrayAdapter(this@ManageMenuActivity, android.R.layout.simple_dropdown_item_1line, categories)
+                binding.spinnerCategory.setAdapter(adapter)
             }
-            if (file.exists() && file.length() > 0) file.absolutePath else null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+        binding.spinnerCategory.text.clear()
     }
 
-    private fun setupRecyclerView() {
-        // Use isAdmin = true to show the remove icon and handle specific deletion click
-        adapter = MenuAdapter(fileHandler.getMenuItems(), isAdmin = true) { item ->
-            if (!item.imagePath.isNullOrEmpty() && item.imagePath.startsWith("/")) {
-                val imgFile = File(item.imagePath)
-                if (imgFile.exists()) imgFile.delete()
-            }
-            fileHandler.deleteMenuItem(item.id)
-            Toast.makeText(this, "Removed: ${item.name}", Toast.LENGTH_SHORT).show()
-            updateList()
-        }
-        binding.rvAdminMenu.layoutManager = LinearLayoutManager(this)
-        binding.rvAdminMenu.adapter = adapter
-    }
-
-    private fun updateList() {
-        adapter.updateItems(fileHandler.getMenuItems())
+    private fun setLoading(isLoading: Boolean) {
+        binding.btnAddItem.isEnabled = !isLoading
+        binding.btnAddItem.text = if (isLoading) "Saving..." else "ADD PRODUCT"
     }
 
     private fun clearFields() {
@@ -175,7 +179,6 @@ class ManageMenuActivity : AppCompatActivity() {
         binding.spinnerCategory.text?.clear()
         binding.ivSelectedImage.setImageResource(android.R.drawable.ic_menu_camera)
         binding.tvImagePlaceholder.text = "Tap to Add Photo"
-        savedImagePath = null
-        binding.etItemName.requestFocus()
+        selectedImageUri = null
     }
 }

@@ -1,8 +1,9 @@
 package com.example.afc_mad.models
 
 data class User(
-    val phone: String,
-    val address: String,
-    val pin: String,
-    val isAdmin: Boolean = false
+    var uid: String = "",
+    var name: String = "",
+    var phone: String = "",
+    var address: String = "",
+    var role: String = "customer"
 )

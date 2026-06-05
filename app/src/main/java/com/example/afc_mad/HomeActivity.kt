@@ -18,17 +18,25 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.afc_mad.adapters.BannerAdapter
 import com.example.afc_mad.adapters.MenuAdapter
 import com.example.afc_mad.databinding.ActivityHomeBinding
+import com.example.afc_mad.models.Banner
+import com.example.afc_mad.models.Category
+import com.example.afc_mad.models.Product
 import com.example.afc_mad.utils.FileHandler
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var fileHandler: FileHandler
     private lateinit var menuAdapter: MenuAdapter
     private var currentOrderType = "Delivery"
     private var currentCategory = "All"
     
+    private val productsDb = FirebaseDatabase.getInstance().getReference("products")
+    private val categoriesDb = FirebaseDatabase.getInstance().getReference("categories")
+    private val bannersDb = FirebaseDatabase.getInstance().getReference("banners")
+
     private val autoScrollHandler = Handler(Looper.getMainLooper())
     private var autoScrollRunnable: Runnable? = null
     private val hideComingSoonHandler = Handler(Looper.getMainLooper())
@@ -38,11 +46,9 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        fileHandler = FileHandler(this)
-        
         setupMenuRecyclerView()
         setupOrderTypeToggles()
-        setupBanners()
+        setupBannersFromFirebase()
         setupDrawer()
         refreshUI()
         updateLocationDisplay()
@@ -82,6 +88,7 @@ class HomeActivity : AppCompatActivity() {
             tvAddress?.text = address
 
             btnLogout?.setOnClickListener {
+                FirebaseAuth.getInstance().signOut()
                 with(sharedPref.edit()) {
                     clear()
                     apply()
@@ -111,7 +118,7 @@ class HomeActivity : AppCompatActivity() {
                     val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
                     sharedPref.edit().putString("user_address", newAddress).apply()
                     updateLocationDisplay()
-                    setupDrawer() // Update drawer info
+                    setupDrawer()
                     Toast.makeText(this, "Address updated", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -139,9 +146,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupMenuRecyclerView() {
-        menuAdapter = MenuAdapter(mutableListOf()) { item ->
+        menuAdapter = MenuAdapter(mutableListOf()) { product ->
             val intent = Intent(this, ProductDetailActivity::class.java)
-            intent.putExtra("menu_item", item)
+            intent.putExtra("product", product)
             startActivity(intent)
         }
         binding.rvMenu.layoutManager = GridLayoutManager(this, 2)
@@ -177,24 +184,33 @@ class HomeActivity : AppCompatActivity() {
         }, 2000)
     }
 
-    private fun setupBanners() {
-        val banners = fileHandler.getBanners()
-        if (banners.isNotEmpty()) {
-            val adapter = BannerAdapter(banners)
-            binding.viewPagerBanners.adapter = adapter
-            startAutoScroll()
-        }
+    private fun setupBannersFromFirebase() {
+        bannersDb.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val banners = mutableListOf<Banner>()
+                for (child in snapshot.children) {
+                    val b = child.getValue(Banner::class.java)
+                    if (b != null) banners.add(b)
+                }
+                if (banners.isNotEmpty()) {
+                    val adapter = BannerAdapter(banners)
+                    binding.viewPagerBanners.adapter = adapter
+                    startAutoScroll(banners.size)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
     
-    private fun startAutoScroll() {
-        val banners = fileHandler.getBanners()
-        if (banners.size <= 1) return
+    private fun startAutoScroll(size: Int = 0) {
+        if (size <= 1) return
         
         stopAutoScroll()
         autoScrollRunnable = object : Runnable {
             override fun run() {
                 var current = binding.viewPagerBanners.currentItem
-                current = (current + 1) % banners.size
+                current = (current + 1) % size
                 binding.viewPagerBanners.setCurrentItem(current, true)
                 autoScrollHandler.postDelayed(this, 3000)
             }
@@ -222,17 +238,25 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun refreshUI() {
-        loadDynamicCategories()
-        filterMenu()
+        loadDynamicCategoriesFromFirebase()
+        loadProductsFromFirebase()
     }
 
-    private fun loadDynamicCategories() {
-        binding.chipGroup.removeAllViews()
-        addChip("All")
-        val categories = fileHandler.getCategories().filter { 
-            it.orderType.equals(currentOrderType, ignoreCase = true) 
-        }
-        categories.forEach { addChip(it.name) }
+    private fun loadDynamicCategoriesFromFirebase() {
+        categoriesDb.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                binding.chipGroup.removeAllViews()
+                addChip("All")
+                for (child in snapshot.children) {
+                    val cat = child.getValue(Category::class.java)
+                    if (cat != null && cat.orderType.equals(currentOrderType, ignoreCase = true)) {
+                        addChip(cat.name)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
     private fun addChip(name: String) {
@@ -253,7 +277,7 @@ class HomeActivity : AppCompatActivity() {
                         ContextCompat.getColor(context, R.color.afc_red)
                     )
                     uncheckOthers(buttonView as Chip)
-                    filterMenu()
+                    loadProductsFromFirebase()
                 } else {
                     (buttonView as Chip).chipBackgroundColor = ColorStateList.valueOf(
                         ContextCompat.getColor(context, R.color.afc_dark_grey)
@@ -273,13 +297,23 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun filterMenu() {
-        val allItems = fileHandler.getMenuItems()
-        val filtered = allItems.filter { 
-            val typeMatch = it.orderType.equals(currentOrderType, ignoreCase = true)
-            val categoryMatch = currentCategory == "All" || it.category.equals(currentCategory, ignoreCase = true)
-            typeMatch && categoryMatch
-        }
-        menuAdapter.updateItems(filtered)
+    private fun loadProductsFromFirebase() {
+        productsDb.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Product>()
+                for (child in snapshot.children) {
+                    val product = child.getValue(Product::class.java)
+                    if (product != null) {
+                        val categoryMatch = currentCategory == "All" || product.categoryId.equals(currentCategory, ignoreCase = true)
+                        if (categoryMatch) {
+                            list.add(product)
+                        }
+                    }
+                }
+                menuAdapter.updateItems(list)
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 }
