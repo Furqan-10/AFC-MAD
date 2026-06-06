@@ -10,6 +10,7 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:visibility="invisible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomBar">
 
@@ -45,7 +46,7 @@
                     android:padding="8dp"
                     android:background="@drawable/bg_circle_red"
                     android:backgroundTint="#80000000"
-                    android:src="@android:drawable/ic_menu_revert"
+                    android:src="@drawable/ic_arrow_back_white"
                     app:tint="@color/afc_white"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -56,8 +57,8 @@
             <!-- Product Info Section -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:layout_height="wrap_content"
                 android:paddingHorizontal="20dp"
                 android:layout_marginTop="-20dp">
 
@@ -70,6 +71,33 @@
                     android:textSize="26sp"
                     android:textStyle="bold" />
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+
+                    <RatingBar
+                        android:id="@+id/productRatingBar"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:numStars="5"
+                        android:stepSize="0.1"
+                        android:isIndicator="true"
+                        android:progressTint="@color/afc_red" />
+
+                    <TextView
+                        android:id="@+id/tvRatingStats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="(0.0 | 0 reviews)"
+                        android:textColor="@color/afc_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/tvDetailDescription"
                     android:layout_width="match_parent"
@@ -80,35 +108,10 @@
                     android:textSize="14sp"
                     android:lineSpacingExtra="4dp" />
 
-                <!-- Customization Sections -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Choose an option"
-                        android:textColor="@color/afc_white"
-                        android:textStyle="bold"
-                        android:textSize="15sp"
-                        android:layout_alignParentStart="true" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="(required)"
-                        android:textColor="@color/afc_red"
-                        android:textSize="12sp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true" />
-                </RelativeLayout>
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="24dp"
                     app:cardBackgroundColor="@color/afc_dark_grey"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="0dp">
@@ -159,9 +162,26 @@
                     android:textStyle="bold"
                     android:textSize="15sp" />
 
-                <!-- Dynamic Drinks RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvDrinks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="16dp"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/tvReviewsLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Customer Reviews"
+                    android:textColor="@color/afc_white"
+                    android:textStyle="bold"
+                    android:textSize="15sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvReviews"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
@@ -172,7 +192,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Sticky Bottom Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
@@ -180,6 +199,7 @@
         android:background="#121212"
         android:paddingHorizontal="16dp"
         android:paddingBottom="20dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
@@ -260,5 +280,15 @@
             app:layout_constraintStart_toStartOf="@id/btnAddToCart" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/afc_red"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

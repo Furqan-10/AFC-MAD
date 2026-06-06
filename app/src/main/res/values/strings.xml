@@ -9,6 +9,7 @@
     <string name="manage_menu_title">Update Menu</string>
     <string name="view_orders_title">Incoming Orders</string>
     <string name="product_detail_title">Product Details</string>
+    <string name="notifications_title">Notifications</string>
 
     <string name="login">Login</string>
     <string name="signup">Sign Up</string>
@@ -20,4 +21,29 @@
     <string name="view_cart">View Order</string>
     <string name="checkout">Checkout</string>
     <string name="place_order">Place Order</string>
+
+    <!-- Notification & Detail Formatters -->
+    <string name="order_id_format">Order #%s</string>
+    <string name="status_format">Status: %s</string>
+    <string name="total_format">Total: Rs %d</string>
+    <string name="qty_format">x%d</string>
+    <string name="price_format">Rs %d</string>
+
+    <!-- Ratings & Reviews -->
+    <string name="rate_experience">Rate your experience</string>
+    <string name="write_review_hint">Write a review (optional)</string>
+    <string name="submit_review">Submit Review</string>
+    <string name="rate">Rate</string>
+    <string name="review_dashboard_title">Review Dashboard</string>
+    <string name="all">All</string>
+    <string name="five_stars">5 Stars</string>
+    <string name="four_stars">4 Stars</string>
+    <string name="one_star">1 Star</string>
+    <string name="search_reviews_hint">Search reviews by user or text</string>
+    <string name="product_insights">Product Insights</string>
+    <string name="highest_rated_format">Highest Rated: %1$s (%2$.1f★)</string>
+    <string name="lowest_rated_format">Lowest Rated: %1$s (%2$.1f★)</string>
+    <string name="most_reviewed_format">Most Reviewed: %1$s (%2$d reviews)</string>
+    <string name="rating_stats_format">(%.1f | %d reviews)</string>
+    <string name="customer_reviews">Customer Reviews</string>
 </resources>

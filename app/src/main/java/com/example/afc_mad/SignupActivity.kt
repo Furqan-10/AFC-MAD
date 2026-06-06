@@ -1,5 +1,7 @@
 package com.example.afc_mad
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -8,6 +10,7 @@ import com.example.afc_mad.databinding.ActivitySignupBinding
 import com.example.afc_mad.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 
 class SignupActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignupBinding
@@ -25,79 +28,66 @@ class SignupActivity : AppCompatActivity() {
             val address = binding.etAddress.text.toString().trim()
             val pin = binding.etPin.text.toString().trim()
 
-            // Reset errors
-            binding.tilName.error = null
-            binding.tilPhone.error = null
-            binding.tilAddress.error = null
-            binding.tilPin.error = null
-
-            // Validation
-            var isValid = true
-            if (name.isEmpty()) {
-                binding.tilName.error = "Name is required"
-                isValid = false
-            }
-            if (phone.isEmpty()) {
-                binding.tilPhone.error = "Phone number is required"
-                isValid = false
-            }
-            if (address.isEmpty()) {
-                binding.tilAddress.error = "Address is required"
-                isValid = false
-            }
-            if (pin.isEmpty() || pin.length < 4) {
-                binding.tilPin.error = "PIN must be at least 4 digits"
-                isValid = false
+            if (name.isEmpty() || phone.isEmpty() || address.isEmpty() || pin.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            if (!isValid) return@setOnClickListener
+            if (pin.length < 6) {
+                binding.tilPin.error = "PIN must be at least 6 digits"
+                return@setOnClickListener
+            }
 
-            // Show loading state
             setLoading(true)
 
-            // Firebase Auth Registration
-            // Using phone as email pseudo-identity for simplicity in this migration
             val email = "$phone@afc.com"
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pin)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-                        val user = User(uid, name, phone, address, "customer")
-
-                        // Save User Data to Realtime Database
-                        FirebaseDatabase.getInstance().getReference("users")
-                            .child(uid)
-                            .setValue(user)
-                            .addOnCompleteListener { dbTask ->
-                                if (dbTask.isSuccessful) {
-                                    Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
-                                    finish()
-                                } else {
-                                    setLoading(false)
-                                    Toast.makeText(this, "Database Error: ${dbTask.exception?.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                        saveUserToDb(uid, name, phone, address)
                     } else {
                         setLoading(false)
-                        Toast.makeText(this, "Auth Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
                 }
         }
         
-        binding.tvLogin.setOnClickListener {
-            finish()
+        binding.tvLogin.setOnClickListener { finish() }
+    }
+
+    private fun saveUserToDb(uid: String, name: String, phone: String, address: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
+            val fcmToken = if (tokenTask.isSuccessful) tokenTask.result else ""
+            val user = User(uid, name, phone, address, "customer", fcmToken)
+
+            FirebaseDatabase.getInstance().getReference("users").child(uid).setValue(user)
+                .addOnCompleteListener { dbTask ->
+                    setLoading(false)
+                    if (dbTask.isSuccessful) {
+                        val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            putString("user_phone", phone)
+                            putString("user_address", address)
+                            putString("user_role", "customer")
+                            putString("user_name", name)
+                            apply()
+                        }
+                        
+                        Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this, HomeActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Database Error: ${dbTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 
     private fun setLoading(isLoading: Boolean) {
-        if (isLoading) {
-            binding.btnSignup.text = ""
-            binding.btnSignup.isEnabled = false
-            binding.pbLoading.visibility = View.VISIBLE
-        } else {
-            binding.btnSignup.text = "REGISTER"
-            binding.btnSignup.isEnabled = true
-            binding.pbLoading.visibility = View.GONE
-        }
+        binding.btnSignup.visibility = if (isLoading) View.GONE else View.VISIBLE
+        binding.pbLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 }

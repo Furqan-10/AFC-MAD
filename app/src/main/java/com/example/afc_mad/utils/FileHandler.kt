@@ -8,13 +8,12 @@ class FileHandler(private val context: Context) {
 
     private val ordersFile = "orders.txt"
 
-    // Categories and Products are now in Firebase. 
-    // This class is kept for any remaining local order/session persistence if needed, 
-    // though those should ideally move to Firebase next.
+    // Legacy FileHandler updated to match the new Firebase models to fix compilation errors.
+    // This allows the project to build while we transition fully to Firebase orders.
 
     fun saveOrder(order: Order) {
-        val itemsString = order.items.joinToString(";") { "${it.product.id}:${it.quantity}" }
-        val data = "${order.orderId}|${order.userPhone}|${order.userAddress}|$itemsString|${order.totalPrice}|${order.paymentMethod}|${order.status}\n"
+        val itemsString = order.items.joinToString(";") { "${it.productId}:${it.quantity}" }
+        val data = "${order.orderId}|${order.phone}|${order.address}|$itemsString|${order.totalAmount}|${order.paymentMethod}|${order.status}\n"
         context.openFileOutput(ordersFile, Context.MODE_APPEND).use {
             it.write(data.toByteArray())
         }
@@ -31,8 +30,33 @@ class FileHandler(private val context: Context) {
     fun getOrders(): List<Order> {
         val orders = mutableListOf<Order>()
         val file = File(context.filesDir, ordersFile)
-        // Note: Order reconstruction now needs Product objects which are in Firebase.
-        // Full Order migration to Firebase is recommended next.
+        if (file.exists()) {
+            file.readLines().forEach { line ->
+                val parts = line.split("|")
+                if (parts.size >= 7) {
+                    try {
+                        val items = parts[3].split(";").mapNotNull {
+                            val subParts = it.split(":")
+                            if (subParts.size == 2) {
+                                // Creating OrderItem without all fields as we only store ID and Qty locally
+                                OrderItem(productId = subParts[0], quantity = subParts[1].toInt())
+                            } else null
+                        }
+                        orders.add(Order(
+                            orderId = parts[0],
+                            phone = parts[1],
+                            address = parts[2],
+                            items = items,
+                            totalAmount = parts[4].toDouble(),
+                            paymentMethod = parts[5],
+                            status = parts[6]
+                        ))
+                    } catch (e: Exception) {
+                        // Ignore malformed lines
+                    }
+                }
+            }
+        }
         return orders
     }
 }

@@ -10,5 +10,6 @@ data class Product(
     var categoryId: String = "",
     var imageUrl: String = "",
     var available: Boolean = true,
-    var rating: Double = 0.0
+    var averageRating: Double = 0.0,
+    var totalRatings: Int = 0
 ) : Serializable

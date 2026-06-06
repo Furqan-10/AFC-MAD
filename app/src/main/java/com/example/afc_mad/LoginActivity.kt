@@ -10,6 +10,7 @@ import com.example.afc_mad.databinding.ActivityLoginBinding
 import com.example.afc_mad.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -23,40 +24,26 @@ class LoginActivity : AppCompatActivity() {
             val phone = binding.etPhone.text.toString().trim()
             val pin = binding.etPin.text.toString().trim()
 
-            // Reset errors
-            binding.tilPhone.error = null
-            binding.tilPin.error = null
-
-            // Validation
-            if (phone.isEmpty()) {
-                binding.tilPhone.error = "Phone number is required"
-                return@setOnClickListener
-            }
-            if (pin.isEmpty()) {
-                binding.tilPin.error = "PIN is required"
+            if (phone.isEmpty() || pin.isEmpty()) {
+                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Show loading state
             setLoading(true)
 
-            // Firebase Authentication
             if (phone == "admin" && pin == "1234") {
-                // Keep hardcoded admin for quick access or migrate to DB
-                startActivity(Intent(this, AdminHomeActivity::class.java))
-                finish()
+                loginAdmin()
             } else {
                 val email = "$phone@afc.com"
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pin)
+                val password = if (pin.length == 4) pin + "afc00" else pin
+                
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            val uid = FirebaseAuth.getInstance().currentUser!!.uid
-                            fetchUserDataAndNavigate(uid)
+                            updateTokenAndNavigate(FirebaseAuth.getInstance().currentUser!!.uid)
                         } else {
                             setLoading(false)
-                            Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                            binding.tilPhone.error = "Invalid credentials"
-                            binding.tilPin.error = "Invalid credentials"
+                            Toast.makeText(this, "Login Failed: Check Phone/PIN", Toast.LENGTH_SHORT).show()
                         }
                     }
             }
@@ -64,6 +51,46 @@ class LoginActivity : AppCompatActivity() {
 
         binding.tvSignup.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
+        }
+    }
+
+    private fun loginAdmin() {
+        val adminEmail = "admin@afc.com"
+        val adminPass = "admin123"
+
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(adminEmail, adminPass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val uid = FirebaseAuth.getInstance().currentUser!!.uid
+                    // Sync Admin profile to DB to enable notification history
+                    val adminUser = User(uid, "Administrator", "admin", "Office", "admin")
+                    FirebaseDatabase.getInstance().getReference("users").child(uid).setValue(adminUser)
+                        .addOnCompleteListener { updateTokenAndNavigate(uid) }
+                } else {
+                    // Create master admin if first time
+                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(adminEmail, adminPass)
+                        .addOnCompleteListener { createAdminTask ->
+                            if (createAdminTask.isSuccessful) {
+                                val uid = FirebaseAuth.getInstance().currentUser!!.uid
+                                val adminUser = User(uid, "Administrator", "admin", "Office", "admin")
+                                FirebaseDatabase.getInstance().getReference("users").child(uid).setValue(adminUser)
+                                    .addOnCompleteListener { updateTokenAndNavigate(uid) }
+                            } else {
+                                setLoading(false)
+                                Toast.makeText(this, "Admin Auth Error", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun updateTokenAndNavigate(uid: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            val token = if (task.isSuccessful) task.result else ""
+            FirebaseDatabase.getInstance().getReference("users").child(uid).child("fcmToken")
+                .setValue(token).addOnCompleteListener {
+                    fetchUserDataAndNavigate(uid)
+                }
         }
     }
 
@@ -77,6 +104,7 @@ class LoginActivity : AppCompatActivity() {
                         putString("user_phone", user.phone)
                         putString("user_address", user.address)
                         putString("user_role", user.role)
+                        putString("user_name", user.name)
                         apply()
                     }
                     
@@ -88,23 +116,17 @@ class LoginActivity : AppCompatActivity() {
                     finish()
                 } else {
                     setLoading(false)
-                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
                 setLoading(false)
-                Toast.makeText(this, "Error fetching user: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error fetching user profile", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun setLoading(isLoading: Boolean) {
-        if (isLoading) {
-            binding.btnLogin.text = ""
-            binding.btnLogin.isEnabled = false
-            binding.pbLoading.visibility = View.VISIBLE
-        } else {
-            binding.btnLogin.text = "LOGIN"
-            binding.btnLogin.isEnabled = true
-            binding.pbLoading.visibility = View.GONE
-        }
+        binding.btnLogin.text = if (isLoading) "" else "LOGIN"
+        binding.btnLogin.isEnabled = !isLoading
+        binding.pbLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 }

@@ -30,6 +30,16 @@
             android:layout_marginTop="2dp" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btnRateProduct"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rate"
+        android:textSize="12sp"
+        android:visibility="gone"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:textColor="@color/afc_red" />
+
     <ImageButton
         android:id="@+id/btnMinus"
         android:layout_width="32dp"

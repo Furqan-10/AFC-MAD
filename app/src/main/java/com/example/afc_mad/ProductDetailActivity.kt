@@ -12,8 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.afc_mad.adapters.ReviewAdapter
 import com.example.afc_mad.databinding.ActivityProductDetailBinding
 import com.example.afc_mad.models.Product
+import com.example.afc_mad.repository.RatingRepository
 import com.example.afc_mad.utils.CartManager
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -27,17 +29,23 @@ class ProductDetailActivity : AppCompatActivity() {
 
     private val addonQuantities = mutableMapOf<String, Int>()
     private val addonItemsMap = mutableMapOf<String, Product>()
+    private val productsDb = FirebaseDatabase.getInstance().getReference("products")
+    private val ratingRepository = RatingRepository()
+    private lateinit var reviewAdapter: ReviewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        currentProduct = intent.getSerializableExtra("product") as? Product
+        val productId = intent.getStringExtra("productId")
 
-        if (currentProduct != null) {
-            setupUI(currentProduct!!)
-            setupDrinksSection()
+        if (productId != null) {
+            fetchProductDetails(productId)
+            setupReviewsRecyclerView(productId)
+        } else {
+            Toast.makeText(this, "Product ID not found", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         binding.ivBack.setOnClickListener { finish() }
@@ -75,21 +83,75 @@ class ProductDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupReviewsRecyclerView(productId: String) {
+        reviewAdapter = ReviewAdapter(emptyList())
+        binding.rvReviews.layoutManager = LinearLayoutManager(this)
+        binding.rvReviews.adapter = reviewAdapter
+
+        ratingRepository.getProductReviews(productId) { reviews ->
+            if (reviews.isEmpty()) {
+                binding.tvReviewsLabel.visibility = View.GONE
+                binding.rvReviews.visibility = View.GONE
+            } else {
+                binding.tvReviewsLabel.visibility = View.VISIBLE
+                binding.rvReviews.visibility = View.VISIBLE
+                reviewAdapter.updateList(reviews)
+            }
+        }
+    }
+
+    private fun fetchProductDetails(productId: String) {
+        binding.pbLoading.visibility = View.VISIBLE
+        productsDb.child(productId).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                currentProduct = snapshot.getValue(Product::class.java)
+                if (currentProduct != null) {
+                    setupUI(currentProduct!!)
+                    setupDrinksSection()
+                    binding.pbLoading.visibility = View.GONE
+                    binding.scrollView.visibility = View.VISIBLE
+                    binding.bottomBar.visibility = View.VISIBLE
+                } else {
+                    Toast.makeText(this@ProductDetailActivity, "Product not found", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@ProductDetailActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        })
+    }
+
     private fun setupUI(product: Product) {
         binding.tvDetailName.text = product.name
         binding.tvOptionName.text = product.name
         binding.tvDetailDescription.text = product.description
         binding.tvDetailPriceLabel.text = "Rs ${product.price}"
 
-        try {
-            val imageBytes = Base64.decode(product.imageUrl, Base64.DEFAULT)
+        // Update Rating UI
+        binding.productRatingBar.rating = product.averageRating.toFloat()
+        binding.tvRatingStats.text = String.format("(%.1f | %d reviews)", product.averageRating, product.totalRatings)
+
+        if (product.imageUrl.startsWith("http")) {
             Glide.with(this)
-                .asBitmap()
-                .load(imageBytes)
+                .load(product.imageUrl)
                 .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
                 .into(binding.ivProductImage)
-        } catch (e: Exception) {
-            binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_report_image)
+        } else {
+            try {
+                val imageBytes = Base64.decode(product.imageUrl, Base64.DEFAULT)
+                Glide.with(this)
+                    .asBitmap()
+                    .load(imageBytes)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(binding.ivProductImage)
+            } catch (e: Exception) {
+                binding.ivProductImage.setImageResource(android.R.drawable.ic_menu_report_image)
+            }
         }
             
         updateQuantityUI()
@@ -104,8 +166,7 @@ class ProductDetailActivity : AppCompatActivity() {
             return
         }
 
-        FirebaseDatabase.getInstance().getReference("products")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+        productsDb.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val drinks = mutableListOf<Product>()
                     for (child in snapshot.children) {

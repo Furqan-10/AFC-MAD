@@ -5,6 +5,7 @@
     <color name="afc_dark_red">#A00D24</color>
     <color name="afc_black">#000000</color> <!-- Changed to True Black for OLED/Premium feel -->
     <color name="afc_dark_grey">#1A1A1A</color> <!-- For cards in dark mode -->
+    <color name="afc_grey">#808080</color>
     <color name="afc_white">#FFFFFF</color>
     <color name="afc_cream">#FFF8F0</color>
     <color name="afc_light_gray">#F5F5F5</color>

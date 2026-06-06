@@ -12,7 +12,8 @@
         android:id="@+id/ivProfileAvatar"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:src="@mipmap/ic_launcher_round" />
+        android:src="@mipmap/ic_launcher_round"
+        android:contentDescription="Profile Picture" />
 
     <TextView
         android:id="@+id/tvProfileName"
@@ -40,11 +41,33 @@
         android:background="@color/afc_dark_grey" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnChangeAddress"
+        android:id="@+id/btnNotifications"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:gravity="start|center_vertical"
+        android:text="Notifications"
+        android:textColor="@color/afc_white"
+        app:icon="@android:drawable/ic_popup_reminder"
+        app:iconTint="@color/afc_white" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMyOrders"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="My Orders"
+        android:textColor="@color/afc_white"
+        app:icon="@android:drawable/ic_menu_agenda"
+        app:iconTint="@color/afc_white" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnChangeAddress"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
         android:text="Change Address"
         android:textColor="@color/afc_white"

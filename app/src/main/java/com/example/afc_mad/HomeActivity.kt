@@ -1,7 +1,9 @@
 package com.example.afc_mad
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
@@ -21,7 +23,7 @@ import com.example.afc_mad.databinding.ActivityHomeBinding
 import com.example.afc_mad.models.Banner
 import com.example.afc_mad.models.Category
 import com.example.afc_mad.models.Product
-import com.example.afc_mad.utils.FileHandler
+import com.example.afc_mad.notifications.MyFirebaseMessagingService
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
@@ -40,6 +42,14 @@ class HomeActivity : AppCompatActivity() {
     private val autoScrollHandler = Handler(Looper.getMainLooper())
     private var autoScrollRunnable: Runnable? = null
     private val hideComingSoonHandler = Handler(Looper.getMainLooper())
+
+    private val notificationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val title = intent?.getStringExtra("title") ?: "New Notification"
+            val message = intent?.getStringExtra("message") ?: ""
+            showNotificationPopup(title, message)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +76,15 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun showNotificationPopup(title: String, message: String) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .setCancelable(false)
+            .show()
+    }
+
     private fun setupDrawer() {
         val navigationView = binding.navigationView
         if (navigationView.headerCount == 0) {
@@ -79,12 +98,14 @@ class HomeActivity : AppCompatActivity() {
             val tvAddress = headerView.findViewById<TextView>(R.id.tvProfileAddress)
             val btnLogout = headerView.findViewById<MaterialButton>(R.id.btnLogout)
             val btnChangeAddress = headerView.findViewById<MaterialButton>(R.id.btnChangeAddress)
+            val btnMyOrders = headerView.findViewById<MaterialButton>(R.id.btnMyOrders)
+            val btnNotifications = headerView.findViewById<MaterialButton>(R.id.btnNotifications)
 
             val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-            val phone = sharedPref.getString("user_phone", "Guest")
             val address = sharedPref.getString("user_address", "No address set")
+            val name = sharedPref.getString("user_name", "User")
 
-            tvName?.text = "User: $phone"
+            tvName?.text = name
             tvAddress?.text = address
 
             btnLogout?.setOnClickListener {
@@ -102,6 +123,16 @@ class HomeActivity : AppCompatActivity() {
             btnChangeAddress?.setOnClickListener {
                 showChangeAddressDialog()
             }
+
+            btnMyOrders?.setOnClickListener {
+                startActivity(Intent(this, MyOrdersActivity::class.java))
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            }
+
+            btnNotifications?.setOnClickListener {
+                startActivity(Intent(this, NotificationHistoryActivity::class.java))
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            }
         }
     }
 
@@ -115,15 +146,26 @@ class HomeActivity : AppCompatActivity() {
             .setPositiveButton("Update") { _, _ ->
                 val newAddress = input.text.toString().trim()
                 if (newAddress.isNotEmpty()) {
-                    val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-                    sharedPref.edit().putString("user_address", newAddress).apply()
-                    updateLocationDisplay()
-                    setupDrawer()
-                    Toast.makeText(this, "Address updated", Toast.LENGTH_SHORT).show()
+                    updateAddressInFirebase(newAddress)
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun updateAddressInFirebase(newAddress: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        
+        FirebaseDatabase.getInstance().getReference("users").child(uid).child("address")
+            .setValue(newAddress)
+            .addOnSuccessListener {
+                val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                sharedPref.edit().putString("user_address", newAddress).apply()
+                
+                updateLocationDisplay()
+                setupDrawer()
+                Toast.makeText(this, "Address updated permanently", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun updateLocationDisplay() {
@@ -138,17 +180,25 @@ class HomeActivity : AppCompatActivity() {
         startAutoScroll()
         updateLocationDisplay()
         setupDrawer()
+        
+        val filter = IntentFilter(MyFirebaseMessagingService.ACTION_NOTIFICATION_RECEIVED)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(notificationReceiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(notificationReceiver, filter)
+        }
     }
     
     override fun onPause() {
         super.onPause()
         stopAutoScroll()
+        unregisterReceiver(notificationReceiver)
     }
 
     private fun setupMenuRecyclerView() {
         menuAdapter = MenuAdapter(mutableListOf()) { product ->
             val intent = Intent(this, ProductDetailActivity::class.java)
-            intent.putExtra("product", product)
+            intent.putExtra("productId", product.id)
             startActivity(intent)
         }
         binding.rvMenu.layoutManager = GridLayoutManager(this, 2)
@@ -198,14 +248,12 @@ class HomeActivity : AppCompatActivity() {
                     startAutoScroll(banners.size)
                 }
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
     
     private fun startAutoScroll(size: Int = 0) {
         if (size <= 1) return
-        
         stopAutoScroll()
         autoScrollRunnable = object : Runnable {
             override fun run() {
@@ -254,7 +302,6 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
@@ -312,7 +359,6 @@ class HomeActivity : AppCompatActivity() {
                 }
                 menuAdapter.updateItems(list)
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
