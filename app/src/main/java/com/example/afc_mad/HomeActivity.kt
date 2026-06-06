@@ -100,6 +100,7 @@ class HomeActivity : AppCompatActivity() {
             val btnChangeAddress = headerView.findViewById<MaterialButton>(R.id.btnChangeAddress)
             val btnMyOrders = headerView.findViewById<MaterialButton>(R.id.btnMyOrders)
             val btnInvoices = headerView.findViewById<MaterialButton>(R.id.btnInvoices)
+            val btnAbout = headerView.findViewById<MaterialButton>(R.id.btnAbout)
             val btnNotifications = headerView.findViewById<MaterialButton>(R.id.btnNotifications)
 
             val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
@@ -132,6 +133,11 @@ class HomeActivity : AppCompatActivity() {
 
             btnInvoices?.setOnClickListener {
                 startActivity(Intent(this, ReceiptHistoryActivity::class.java))
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            }
+
+            btnAbout?.setOnClickListener {
+                startActivity(Intent(this, AboutAfcActivity::class.java))
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
 

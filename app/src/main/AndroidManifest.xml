@@ -40,6 +40,7 @@
         <activity android:name=".SubmitReviewActivity" />
         <activity android:name=".ReviewDashboardActivity" />
         <activity android:name=".ReceiptHistoryActivity" />
+        <activity android:name=".AboutAfcActivity" />
 
         <service
             android:name=".notifications.MyFirebaseMessagingService"
