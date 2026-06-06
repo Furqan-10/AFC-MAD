@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation("androidx.gridlayout:gridlayout:1.0.0")
     implementation(libs.glide)
+    implementation(libs.zxing.core)
 
     // Firebase
     implementation(platform(libs.firebase.bom))

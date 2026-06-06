@@ -10,13 +10,16 @@ import com.example.afc_mad.databinding.ActivityCheckoutBinding
 import com.example.afc_mad.models.Order
 import com.example.afc_mad.models.OrderItem
 import com.example.afc_mad.repository.OrderRepository
+import com.example.afc_mad.repository.ReceiptRepository
 import com.example.afc_mad.utils.CartManager
+import com.example.afc_mad.utils.PdfGenerator
+import com.example.afc_mad.utils.QrGenerator
 import com.google.firebase.auth.FirebaseAuth
-import java.util.*
 
 class CheckoutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCheckoutBinding
     private val orderRepository = OrderRepository()
+    private val receiptRepository = ReceiptRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +29,7 @@ class CheckoutActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
         val phone = sharedPref.getString("user_phone", "") ?: ""
         val address = sharedPref.getString("user_address", "Not provided") ?: "Not provided"
-        val name = sharedPref.getString("user_name", "Customer") ?: "Customer" // Assuming name is stored
+        val name = sharedPref.getString("user_name", "Customer") ?: "Customer"
 
         binding.tvOrderAddress.text = "Address: $address"
         binding.tvOrderTotal.text = "Total: Rs ${CartManager.getTotalPrice().toInt()}"
@@ -71,18 +74,46 @@ class CheckoutActivity : AppCompatActivity() {
         )
 
         orderRepository.placeOrder(order) { success, error ->
-            setLoading(false)
             if (success) {
-                CartManager.clearCart(this)
-                Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_LONG).show()
-                val intent = Intent(this, HomeActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
+                generateAndUploadReceipt(order, currentUser.uid)
             } else {
+                setLoading(false)
                 Toast.makeText(this, "Failed to place order: $error", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun generateAndUploadReceipt(order: Order, userId: String) {
+        val qrContent = "OrderID: ${order.orderId}\nUserID: $userId\nTime: ${order.createdAt}"
+        val qrBitmap = QrGenerator.generateQrCode(qrContent)
+
+        val pdfFile = PdfGenerator.generateOrderInvoice(this, order, qrBitmap)
+
+        // ALWAYS EMPTY CART AFTER ORDER PLACEMENT
+        CartManager.clearCart(this)
+
+        if (pdfFile != null) {
+            receiptRepository.uploadReceiptAsBase64(order.orderId, userId, pdfFile) { success, _ ->
+                setLoading(false)
+                if (success) {
+                    Toast.makeText(this, "Order Placed & Invoice Generated!", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "Order Placed successfully!", Toast.LENGTH_SHORT).show()
+                }
+                navigateToHome()
+            }
+        } else {
+            setLoading(false)
+            Toast.makeText(this, "Order Placed successfully!", Toast.LENGTH_SHORT).show()
+            navigateToHome()
+        }
+    }
+
+    private fun navigateToHome() {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun setLoading(isLoading: Boolean) {
